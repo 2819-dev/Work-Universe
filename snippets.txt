@@ -1,0 +1,64 @@
+HOW THIS FILE WORKS (anything above the first # line is just notes and is ignored)
+
+  # Category            -> a top-level menu item
+  ## Subcategory        -> optional, a submenu inside the category
+  ### Snippet title     -> the name you see in the menu
+  Everything under a ### line, until the next # line, is the text that gets copied.
+
+Save the file, then choose "Reload snippets" from the ✂︎ menu.
+Replace the examples below with your own.
+
+
+# Welcome
+
+### Welcome new member
+Hi and welcome to the community! 👋 Please take a minute to read our community guidelines (pinned at the top). If you have any questions, feel free to ask here or message a moderator.
+
+### Welcome back
+Welcome back! Great to see you here again.
+
+
+# Rule reminders
+
+## Spam & self-promotion
+
+### Self-promo reminder
+Hi! Just a friendly reminder that self-promotion isn't allowed outside the designated thread. I've removed your post, but you're welcome to share it in the weekly promo thread instead.
+
+### Spam removed
+This post was removed because it was identified as spam. If you believe this was a mistake, please reply to this message and a moderator will review it.
+
+## Civility
+
+### Keep it respectful
+Hey everyone, let's keep the conversation respectful. Disagreeing is fine, but personal attacks aren't. Please focus on the topic, not the person.
+
+### Heated thread warning
+This thread is getting heated. Please take a breath and keep things civil, or the thread may be locked.
+
+## Off-topic
+
+### Off-topic post
+Hi! This post is a bit off-topic for this space, so I've moved it to the general chat channel. Thanks for understanding!
+
+
+# Moderation actions
+
+### Formal warning
+Hello,
+
+This is a formal warning for breaking our community guidelines (rule: ___).
+
+Please review the guidelines. Further violations may lead to a temporary suspension.
+
+Thanks,
+The Moderation Team
+
+### Thread locked
+This thread has been locked because the discussion has run its course. Feel free to start a new thread if you have something new to add.
+
+
+# Support
+
+### Pointing to the help page
+Thanks for reaching out! You can find the answer to most common questions on our help page. If that doesn't solve it, reply here and we'll take a look.
