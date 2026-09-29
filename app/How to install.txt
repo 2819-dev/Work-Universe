@@ -1,0 +1,34 @@
+SNIPPET MENU: HOW TO INSTALL
+============================
+
+1. Drag "Snippet Menu" (the app with the scissors icon) into your
+   Applications folder.
+
+2. Open your Applications folder and double-click "Snippet Menu".
+
+   macOS will say it "cannot verify" the app or that it "can't be opened".
+   That's expected: the app is free and isn't registered with Apple
+   ($99/year). To allow it, just once:
+
+     a. Click "Done" (or "OK" / "Cancel") on that message.
+     b. Open System Settings > Privacy & Security.
+     c. Scroll down to the "Security" section. You'll see
+        "Snippet Menu was blocked...". Click "Open Anyway".
+     d. Enter your Mac password if asked, then click "Open Anyway" again.
+
+3. A scissors icon appears in your menu bar (top right of the screen).
+   You're done!
+
+EVERYDAY USE
+- Press Control + Option + S in any app (or click the scissors icon).
+- Pick a category, then a snippet. Its text is copied.
+- Click where you want it and press Command + V to paste.
+
+EDITING YOUR SNIPPETS
+- Scissors menu > "Edit snippets..." opens your snippets in TextEdit.
+- Save, and the menu updates the next time you open it.
+
+START AUTOMATICALLY
+- Scissors menu > "Open at Login".
+
+Full instructions: https://github.com/2819-dev/Work-Universe

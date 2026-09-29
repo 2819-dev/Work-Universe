@@ -5,8 +5,13 @@ HOW THIS FILE WORKS (anything above the first # line is just notes and is ignore
   ### Snippet title     -> the name you see in the menu
   Everything under a ### line, until the next # line, is the text that gets copied.
 
-Save the file, then choose "Reload snippets" from the ✂︎ menu.
+After saving, the menu updates the next time you open it.
 Replace the examples below with your own.
+
+KEYBOARD SHORTCUT: change the line below to use a different one, e.g.
+"Shortcut: command+shift+m". Names: control, option, command, shift.
+
+Shortcut: control+option+s
 
 
 # Welcome
