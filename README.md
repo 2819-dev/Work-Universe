@@ -1,100 +1,78 @@
 # Snippet Menu for Mac
 
-A small ✂︎ icon in your Mac's menu bar that holds your own ready-made replies for community moderation.
+A small ✂︎ scissors icon in your Mac's menu bar that holds your own ready-made replies for community moderation.
 Click a reply and its text is copied, so you can paste it wherever you need it.
 
-- **Only your snippets.** The menu shows only what you write in `snippets.txt`.
+- **Only your snippets.** The menu shows only what you write in your snippets file.
 - **Not a clipboard manager.** It never reads, records, or saves anything you copy.
 - **It doesn't paste for you.** It only copies. You choose where to paste, with **⌘ Command + V**.
-- **Free.** It runs on [Hammerspoon](https://www.hammerspoon.org), a free Mac app.
+- **Free.** No purchase and no Apple Developer account needed.
+- Works on **macOS 13 (Ventura) or newer**, on Apple Silicon and Intel Macs.
 
 ---
 
-## What you'll get
+## 1. Install (one time, about 5 minutes)
 
-- A **✂︎** icon in the menu bar. Click it to see your **categories**. Point at a category to open its **subcategories** (if it has any), and then the **snippets**.
-- Press **Control + Option + S** in any app to open the same menu right where your mouse pointer is.
-- Click a snippet and its full text is copied. A short message says **"Copied: [snippet title]"**.
-- Hover over a snippet in the menu to see a preview of its text.
-- At the bottom of the menu, **Edit snippets…** opens your snippets file and **Reload snippets** refreshes the menu.
+### Step 1: Download
 
----
+1. Open the **[latest release](https://github.com/2819-dev/Work-Universe/releases/latest)**.
+2. Under **Assets**, click **Snippet-Menu.zip**. It downloads to your **Downloads** folder.
+3. Double-click **Snippet-Menu.zip** in Downloads. A folder called **Snippet Menu** appears.
 
-## Installing it (about 10 minutes, one time only)
+### Step 2: Move the app into Applications
 
-### Step 1: Install Hammerspoon
+1. Open the **Snippet Menu** folder.
+2. Drag **Snippet Menu** (the app with the scissors icon) into your **Applications** folder.
+   Open a second Finder window with **⌘ Command + N** and click **Applications** in the sidebar if you need a place to drop it.
 
-1. Go to **https://www.hammerspoon.org** and click **Download**.
-2. Open the downloaded `.zip` file in your **Downloads** folder. You'll get an app called **Hammerspoon**.
-3. Drag **Hammerspoon** into your **Applications** folder.
-4. Open **Hammerspoon** from Applications. If your Mac asks *"Are you sure you want to open it?"*, click **Open**.
-5. A Hammerspoon settings window appears. Tick these two boxes:
-   - **Launch Hammerspoon at login**, so the menu is there every time you start your Mac.
-   - **Show menu icon**. This adds a small hammer icon to the menu bar, which you'll use to reload later.
-6. If it asks for **Accessibility** permission, click the button. It opens **System Settings → Privacy & Security → Accessibility**. Turn on the switch next to **Hammerspoon**. You may need to type your Mac password.
+### Step 3: Open it the first time
 
-### Step 2: Allow Hammerspoon's notifications (recommended)
+Because the app is free and isn't registered with Apple (that costs $99/year), macOS blocks it the first time. You only need to allow it **once**:
 
-If something is wrong with your snippets file, the menu tells you with an on-screen message and a notification. To make sure the notification shows up:
+1. In **Applications**, double-click **Snippet Menu**.
+2. A message says Apple "could not verify" it or that it "can't be opened". Click **Done** (or **OK**). **Don't** click "Move to Trash".
+3. Open **System Settings** (Apple menu  → System Settings) and click **Privacy & Security** in the sidebar.
+4. Scroll down to the **Security** section. You'll see *"Snippet Menu" was blocked…*. Click **Open Anyway**.
+5. Enter your Mac password (or use Touch ID) if asked, then click **Open Anyway** again.
 
-1. Open **System Settings → Notifications**.
-2. Scroll down, click **Hammerspoon**, and turn on **Allow notifications**.
+A **✂︎ scissors icon** appears in your menu bar (top-right of your screen), along with a short "Snippets ready" message. You're done!
 
-(The "Copied: ..." message appears on screen whether or not you do this.)
+After this, it opens normally, with no more warnings.
 
-### Step 3: Download the files
+> **Can't see the scissors?** If your menu bar is crowded, macOS hides icons that don't fit, especially on MacBooks with a camera notch. Quit another menu bar app to make room. The keyboard shortcut (below) works either way.
 
-1. On this GitHub page, click the green **Code** button, then **Download ZIP**.
-2. Open the downloaded `.zip`. You'll get a folder containing `init.lua`, `snippets.txt`, and this README.
+### Step 4: Start it automatically (recommended)
 
-### Step 4: Put the files in Hammerspoon's folder
-
-Hammerspoon's settings live in a hidden folder called `.hammerspoon` inside your home folder.
-
-1. Click the **hammer icon** in the menu bar and choose **Open Config**. This creates the hidden folder if it doesn't already exist. If a text editor opens, just close it.
-2. Click on your desktop so **Finder** is active. In the top menu, choose **Go → Go to Folder…**
-3. Type `~/.hammerspoon` and press **Return**. The hidden folder opens.
-4. Drag **`init.lua`** and **`snippets.txt`** from the downloaded folder into this `.hammerspoon` folder.
-   If Finder says a file named `init.lua` already exists, choose **Replace**. It's only the empty starter file from step 1.
-
-The folder should now contain:
-
-```
-.hammerspoon
-├── init.lua
-└── snippets.txt
-```
-
-### Step 5: Turn it on
-
-Click the **hammer icon** in the menu bar and choose **Reload Config**.
-
-You should see **"Snippets loaded"** briefly on screen and a **✂︎** in your menu bar. You're done!
-
-> **Can't see the ✂︎?** If your menu bar is crowded, macOS hides icons that don't fit, especially on MacBooks with a camera notch. Try quitting another menu bar app. **Control + Option + S** works either way.
+Click **✂︎** and choose **Open at Login**. A checkmark means it starts every time you turn on your Mac.
 
 ---
 
-## Everyday use
+## 2. Everyday use
 
-1. Press **Control + Option + S** (or click **✂︎** in the menu bar).
-2. Move to a category, then a subcategory if there is one, then click the snippet.
-3. Click where you want the text to go and press **⌘ Command + V** to paste.
+1. Press **Control + Option + S** in any app (or click **✂︎** in the menu bar).
+   The menu opens right where your mouse pointer is.
+2. Point at a **category**, then a **subcategory** if it has one, then click a **snippet**.
+   Hover over a snippet for a moment to preview its text.
+3. A message says **"Copied: [snippet title]"**.
+4. Click where you want the text and press **⌘ Command + V** to paste.
+
+To close the menu without choosing anything, press **Esc** or click elsewhere.
 
 ---
 
-## Writing your own snippets
+## 3. Writing your own snippets
 
-Choose **✂︎ → Edit snippets…**. This opens `snippets.txt` in TextEdit.
+Click **✂︎ → Edit snippets…**. Your snippets file opens in TextEdit.
+The app comes with example moderation replies. Replace them with your own.
 
-The file uses a few simple markers at the **start** of a line:
+Start a line with these markers, each followed by a space:
 
 | Start the line with | What it means |
 |---|---|
-| `# ` (one hash + space) | A **category**, the top-level menu item |
-| `## ` (two hashes + space) | A **subcategory** inside that category (optional) |
-| `### ` (three hashes + space) | A **snippet title**, the name you see in the menu |
-| Anything else | The **text of the snippet** above it. This is what gets copied. It can be many lines long. |
+| `# ` | A **category**, the top-level menu item |
+| `## ` | A **subcategory** inside that category (optional) |
+| `### ` | A **snippet title**, the name you see in the menu |
+| anything else | The **text of the snippet** above it. This is what gets copied. It can be many lines. |
 
 Example:
 
@@ -116,66 +94,102 @@ This post was removed because it was identified as spam.
 Hi and welcome to the community! 👋
 ```
 
+**Save with ⌘ Command + S.** The menu picks up your changes the next time you open it. There's nothing to restart.
+
 Tips:
 
-- **Subcategories are optional.** A snippet can sit directly under a category, like "Welcome new member" above. A category can also mix subcategories and loose snippets.
-- **Blank lines inside a snippet are kept.** Blank lines at its very start or end are trimmed off.
+- **Subcategories are optional.** A snippet can sit directly under a category, like "Welcome new member" above.
+- **Blank lines inside a snippet are kept.** Blank lines at its very start or end are trimmed.
 - **Notes before the first `#` line are ignored**, so you can keep reminders to yourself at the top.
 - **Emoji and other languages are fine.**
-- TextEdit may turn straight quotes `"` into curly quotes `" "` as you type. If you don't want that, go to **Edit → Substitutions** in TextEdit and untick **Smart Quotes**.
-
-**After saving the file, choose ✂︎ → Reload snippets** (or hammer icon → Reload Config). The menu is rebuilt from the file every time Hammerspoon reloads.
+- TextEdit may turn straight quotes into curly ones as you type. To stop that: **Edit → Substitutions →** untick **Smart Quotes**.
+- **Back it up:** **✂︎ → Show snippets file in Finder** shows where it lives. Copy that `snippets.txt` somewhere safe from time to time.
 
 ---
 
-## If something goes wrong
+## 4. Changing the keyboard shortcut
 
-The menu shows a clear message if it can't use your file:
+1. **✂︎ → Edit snippets…**
+2. Near the top, find this line:
+
+   ```
+   Shortcut: control+option+s
+   ```
+
+3. Change it. Put the key names in any order, joined with `+`:
+   - Modifiers: `control`, `option`, `command`, `shift`. Use at least one of control, option, or command.
+   - The key: a letter, a number, or `f1`–`f12`.
+   - Example: `Shortcut: command+shift+m`
+4. Save. The new shortcut works the next time you open the ✂︎ menu (click it once).
+
+The current shortcut is always shown near the bottom of the ✂︎ menu.
+If the new one doesn't work, another app is probably using it, so pick a different combination.
+
+---
+
+## 5. The ✂︎ menu, item by item
+
+| Item | What it does |
+|---|---|
+| Your categories | Your snippets. Click one to copy it. |
+| Shortcut: ⌃⌥S | Shows your current keyboard shortcut (⌃ = Control, ⌥ = Option, ⇧ = Shift, ⌘ = Command). |
+| Edit snippets… | Opens your snippets file in TextEdit. |
+| Show snippets file in Finder | Shows where the file is stored, for backups. |
+| Reload snippets | Re-reads the file now and tells you about any mistakes. |
+| Open at Login | Starts Snippet Menu automatically when your Mac starts. |
+| Quit Snippet Menu | Closes the app. Open it from Applications to bring it back. |
+
+---
+
+## 6. If something goes wrong
+
+If there's a problem with your snippets file, the app shows a message explaining it. The ✂︎ menu also shows **⚠️ … Show details…** so you can see it again.
 
 | Message | What to do |
 |---|---|
-| *"Couldn't find your snippets file"* | Make sure `snippets.txt` is inside the `~/.hammerspoon` folder (see Step 4) and is named exactly `snippets.txt`. |
-| *"Your snippets file is empty"* | Add at least one category and one snippet. |
-| *"No snippets found"* | Check that your snippet titles start with `### ` (three hashes **and a space**). |
-| *"Line 3: snippet ... needs a # Category above it"* | Every snippet must be under a `# Category` line. |
-| *"... has no text, so it was left out"* | That snippet title has no text under it. Add some, or delete the title. |
+| "Couldn't find your snippets file" | Choose **✂︎ → Create example snippets file** to make a fresh one. |
+| "Your snippets file is empty" | Add at least one category and one snippet. |
+| "No snippets found" | Check that snippet titles start with `### `: three hashes **and a space**. |
+| "…needs a # Category above it" | Add a `# Category` line above that snippet. |
+| "…has no text, so it was left out" | Write some text under that title, or delete the title. |
+| "The shortcut … wasn't understood" | Check the `Shortcut:` line (see section 4). |
 
-If the problem is only with some snippets, the rest still load normally.
+If only some snippets have mistakes, the rest still work.
 
-**Nothing happens at all?** Click the hammer icon and choose **Console**. Any error will be shown in red there. If you ask for help, copy and share that text.
+**"Open Anyway" isn't there?** It only appears for about an hour after you try to open the app. Double-click **Snippet Menu** in Applications again, then go back to **Privacy & Security**.
 
----
-
-## Changing the keyboard shortcut
-
-1. Open `init.lua` in TextEdit: in the `~/.hammerspoon` folder, right-click `init.lua` → **Open With → TextEdit**.
-2. Near the top, find these two lines:
-
-   ```lua
-   local HOTKEY_MODIFIERS = { "ctrl", "alt" }
-   local HOTKEY_KEY       = "s"
-   ```
-
-3. Change them. Keep the quotes and commas exactly as shown.
-   - Modifier names: `"ctrl"` = Control, `"alt"` = Option, `"cmd"` = Command, `"shift"` = Shift
-   - The key: a lowercase letter or number, such as `"m"` or `"1"`
-
-   For example, **Command + Shift + M** would be:
-
-   ```lua
-   local HOTKEY_MODIFIERS = { "cmd", "shift" }
-   local HOTKEY_KEY       = "m"
-   ```
-
-4. Save, then click the hammer icon → **Reload Config**.
-
-Choose a combination other apps don't already use. If your shortcut does nothing, it's probably taken, so try another.
-
-You can also change the menu bar symbol (`MENUBAR_TITLE`, currently `"✂︎"`) and how long the "Copied" message stays on screen (`COPIED_MESSAGE_SECONDS`) in the same place.
+**Open at Login didn't stick?** Add it by hand: **System Settings → General → Login Items**, click **+** under "Open at Login", and choose **Snippet Menu**.
 
 ---
 
-## Removing it
+## 7. Updating to a new version
 
-To turn it off, click the hammer icon → **Quit Hammerspoon**, and untick **Launch Hammerspoon at login** in its preferences.
-To remove it completely, also drag **Hammerspoon** from Applications to the Trash.
+1. Quit the app: **✂︎ → Quit Snippet Menu**.
+2. Download the new **Snippet-Menu.zip** from the [latest release](https://github.com/2819-dev/Work-Universe/releases/latest), then drag the app into Applications and choose **Replace**.
+3. Open it. You may need to do **Open Anyway** once more (section 1, step 3).
+
+**Your snippets are kept.** They're stored separately from the app, so replacing the app doesn't touch them.
+
+## 8. Removing it
+
+1. **✂︎ → Quit Snippet Menu**
+2. Drag **Snippet Menu** from Applications to the Trash.
+3. Optional: to delete your snippets too, in Finder choose **Go → Go to Folder…**, type `~/Library/Application Support/Snippet Menu`, and delete that folder.
+
+---
+
+## Alternative: the Hammerspoon version
+
+This repo also contains `init.lua`, which does the same job inside the free app [Hammerspoon](https://www.hammerspoon.org), if you ever prefer that. To use it:
+
+1. Install Hammerspoon.
+2. Put `init.lua` and `snippets.txt` in the `~/.hammerspoon` folder.
+3. Click the hammer icon → **Reload Config**.
+
+The shortcut is set in the top lines of `init.lua`. You don't need this if you use the Snippet Menu app.
+
+---
+
+## For maintainers: how releases are made
+
+The app's source code is in `app/`. GitHub Actions builds it on a Mac for every push to `main` (see `.github/workflows/build.yml`). Pushing a tag like `v1.0.1` also publishes a release with `Snippet-Menu.zip`. The app is ad-hoc signed, which is free; it isn't notarized, which is why step 3 above is needed.
