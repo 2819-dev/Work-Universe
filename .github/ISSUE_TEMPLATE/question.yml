@@ -1,0 +1,11 @@
+name: Ask a question or suggest a feature
+description: Questions, ideas and feedback about QuickSnip.
+title: "Question: "
+labels: ["question"]
+body:
+  - type: textarea
+    id: message
+    attributes:
+      label: Your question or idea
+    validations:
+      required: true
