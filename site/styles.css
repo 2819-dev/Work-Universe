@@ -382,3 +382,8 @@ footer a { color: var(--text-muted); }
   .lead { font-size: 18px; }
   .hero-actions .button { width: 100%; }
 }
+
+/* Fixes */
+.nav-links a.button { color: #fff; }
+.container.prose { max-width: var(--max); }
+.container.prose > * { max-width: 760px; }
