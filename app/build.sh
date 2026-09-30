@@ -1,12 +1,12 @@
 #!/bin/bash
-# Builds "Snippet Menu.app" and Snippet-Menu.zip. Must run on a Mac
+# Builds "QuickSnip.app" and QuickSnip.zip. Must run on a Mac
 # (GitHub Actions does this automatically; see .github/workflows/build.yml).
 set -euo pipefail
 cd "$(dirname "$0")"
 
 VERSION="${1:-0.0.0}"
 OUT=build
-APP="$OUT/Snippet Menu.app"
+APP="$OUT/QuickSnip.app"
 rm -rf "$OUT"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
@@ -16,9 +16,9 @@ swiftc Sources/SnippetParser.swift Tests/main.swift -o "$OUT/tests"
 
 echo "== Compiling (Apple Silicon + Intel)"
 for arch in arm64 x86_64; do
-  swiftc -O -target "$arch-apple-macos13.0" Sources/*.swift -o "$OUT/SnippetMenu-$arch"
+  swiftc -O -target "$arch-apple-macos13.0" Sources/*.swift -o "$OUT/QuickSnip-$arch"
 done
-lipo -create "$OUT/SnippetMenu-arm64" "$OUT/SnippetMenu-x86_64" -output "$APP/Contents/MacOS/SnippetMenu"
+lipo -create "$OUT/QuickSnip-arm64" "$OUT/QuickSnip-x86_64" -output "$APP/Contents/MacOS/QuickSnip"
 
 sed "s/__VERSION__/$VERSION/g" Info.plist > "$APP/Contents/Info.plist"
 cp Resources/sample-1.0.txt Resources/sample-1.1.txt "$APP/Contents/Resources/"
@@ -39,9 +39,11 @@ codesign --force --deep --sign - "$APP"
 codesign --verify --verbose "$APP"
 
 echo "== Zipping"
-PACKAGE="$OUT/package/Snippet Menu"
+PACKAGE="$OUT/package/QuickSnip"
 mkdir -p "$PACKAGE"
 cp -R "$APP" "$PACKAGE/"
 cp "How to install.txt" "$PACKAGE/"
-ditto -c -k --keepParent "$PACKAGE" "$OUT/Snippet-Menu.zip"
-echo "Built $OUT/Snippet-Menu.zip (version $VERSION)"
+ditto -c -k --keepParent "$PACKAGE" "$OUT/QuickSnip.zip"
+# Versions before the rename look for this name when updating themselves.
+cp "$OUT/QuickSnip.zip" "$OUT/Snippet-Menu.zip"
+echo "Built $OUT/QuickSnip.zip (version $VERSION)"

@@ -3,16 +3,28 @@ import AppKit
 // Holds the snippet library and saves every change to snippets.txt.
 final class SnippetStore: ObservableObject {
     static let folderURL = FileManager.default.homeDirectoryForCurrentUser
+        .appendingPathComponent("Library/Application Support/QuickSnip", isDirectory: true)
+    static let legacyFolderURL = FileManager.default.homeDirectoryForCurrentUser
         .appendingPathComponent("Library/Application Support/Snippet Menu", isDirectory: true)
     static let fileURL = folderURL.appendingPathComponent("snippets.txt")
 
     static let defaultPreamble = [
-        "Snippet Menu library",
+        "QuickSnip library",
         "",
-        "This file is managed by Snippet Menu. You can also edit it in any text editor:",
-        "a line starting with \"# \" is a category, \"## \" is a subcategory, \"### \" is a snippet title,",
+        "This file is managed by QuickSnip. You can also edit it in any text editor:",
+        "a line starting with \"# \" is a folder, \"## \" is a subfolder, \"### \" is a snippet title,",
         "and the lines under a snippet title are the text that gets copied.",
     ]
+
+    /// Moves the library from its location before the app was renamed.
+    static func moveLegacyLibrary() {
+        let fm = FileManager.default
+        guard !fm.fileExists(atPath: folderURL.path), fm.fileExists(atPath: legacyFolderURL.path) else { return }
+        try? fm.moveItem(at: legacyFolderURL, to: folderURL)
+    }
+
+    /// Called after renames and deletions so keyboard shortcuts follow along.
+    var remapShortcuts: ((ShortcutTarget) -> ShortcutTarget?) -> Void = { _ in }
 
     @Published private(set) var categories: [Category] = []
     @Published private(set) var loadError: String?
@@ -47,14 +59,14 @@ final class SnippetStore: ObservableObject {
             categories = []
             problems = []
             preamble = Self.defaultPreamble
-            loadError = "Your snippet library couldn't be found. It may have been moved or deleted."
+            loadError = "Your library couldn't be found. It may have been moved or deleted."
             return
         }
         guard let data = try? Data(contentsOf: Self.fileURL),
               let content = String(data: data, encoding: .utf8) else {
             categories = []
             problems = []
-            loadError = "Your snippet library couldn't be opened because it isn't saved as plain text."
+            loadError = "Your library couldn't be opened because it isn't saved as plain text."
             return
         }
         let result = SnippetParser.parse(content)
@@ -84,10 +96,19 @@ final class SnippetStore: ObservableObject {
             .map(SnippetParser.parse)
         guard !samples.isEmpty else { return }
         let cleaned = SampleCleanup.removeSamples(samples, from: categories)
-        let oldNotes = preamble.contains { $0.contains("HOW THIS FILE WORKS") || $0.contains("Replace the examples") }
-        guard cleaned != categories || oldNotes else { return }
-        if oldNotes { preamble = Self.defaultPreamble }
+        guard cleaned != categories else { return }
         commit { $0 = cleaned }
+    }
+
+    /// Replaces the note at the top of the file written by earlier versions.
+    func updateLibraryNotes() {
+        guard loadError == nil, fileExists, preamble != Self.defaultPreamble else { return }
+        let outdated = preamble.contains {
+            $0.contains("HOW THIS FILE WORKS") || $0.contains("Replace the examples") || $0.contains("Snippet Menu")
+        }
+        guard outdated else { return }
+        preamble = Self.defaultPreamble
+        commit { _ in }
     }
 
     // MARK: Looking things up
@@ -115,14 +136,20 @@ final class SnippetStore: ObservableObject {
     }
 
     func renameCategory(_ id: UUID, to title: String) {
-        commit { categories in
+        guard let old = category(id)?.title else { return }
+        let new = SnippetWriter.cleanTitle(title)
+        let saved = commit { categories in
             guard let c = categories.firstIndex(where: { $0.id == id }) else { return }
-            categories[c].title = SnippetWriter.cleanTitle(title)
+            categories[c].title = new
         }
+        if saved { remapShortcuts { $0.renamingFolder(old, to: new) } }
     }
 
     func deleteCategory(_ id: UUID) {
-        commit { $0.removeAll { $0.id == id } }
+        guard let title = category(id)?.title else { return }
+        if commit({ $0.removeAll { $0.id == id } }) {
+            remapShortcuts { $0.isInside(folder: title) ? nil : $0 }
+        }
     }
 
     func addSubcategory(_ title: String, to categoryID: UUID) -> UUID? {
@@ -135,20 +162,29 @@ final class SnippetStore: ObservableObject {
     }
 
     func renameSubcategory(_ categoryID: UUID, _ subcategoryID: UUID, to title: String) {
-        editSubcategory(categoryID, subcategoryID) { $0.title = SnippetWriter.cleanTitle(title) }
+        guard let folder = category(categoryID)?.title,
+              let old = subcategory(categoryID, subcategoryID)?.title else { return }
+        let new = SnippetWriter.cleanTitle(title)
+        if editSubcategory(categoryID, subcategoryID, { $0.title = new }) {
+            remapShortcuts { $0.renamingSubfolder(in: folder, old, to: new) }
+        }
     }
 
     func deleteSubcategory(_ categoryID: UUID, _ subcategoryID: UUID) {
-        commit { categories in
+        guard let folder = category(categoryID)?.title,
+              let sub = subcategory(categoryID, subcategoryID)?.title else { return }
+        let saved = commit { categories in
             guard let c = categories.firstIndex(where: { $0.id == categoryID }) else { return }
             categories[c].subcategories.removeAll { $0.id == subcategoryID }
         }
+        if saved { remapShortcuts { $0.isInside(folder: folder, subfolder: sub) ? nil : $0 } }
     }
 
     func saveSnippet(id: UUID?, title: String, text: String, in categoryID: UUID, _ subcategoryID: UUID?) {
         let cleanTitle = SnippetWriter.cleanTitle(title)
         let cleanText = SnippetWriter.cleanText(text)
-        editSnippets(categoryID, subcategoryID) { snippets in
+        let oldTitle = id.flatMap { snippet($0, in: categoryID, subcategoryID)?.title }
+        let saved = editSnippets(categoryID, subcategoryID) { snippets in
             if let id, let s = snippets.firstIndex(where: { $0.id == id }) {
                 snippets[s].title = cleanTitle
                 snippets[s].text = cleanText
@@ -156,13 +192,43 @@ final class SnippetStore: ObservableObject {
                 snippets.append(Snippet(title: cleanTitle, text: cleanText))
             }
         }
+        if saved, let oldTitle, oldTitle != cleanTitle, let place = names(categoryID, subcategoryID) {
+            remapShortcuts { $0.renamingSnippet(in: place.0, place.1, oldTitle, to: cleanTitle) }
+        }
     }
 
     func deleteSnippet(_ id: UUID, in categoryID: UUID, _ subcategoryID: UUID?) {
-        editSnippets(categoryID, subcategoryID) { $0.removeAll { $0.id == id } }
+        guard let title = snippet(id, in: categoryID, subcategoryID)?.title,
+              let place = names(categoryID, subcategoryID) else { return }
+        let removed = ShortcutTarget.snippet(place.0, place.1, title)
+        if editSnippets(categoryID, subcategoryID, { $0.removeAll { $0.id == id } }) {
+            remapShortcuts { $0 == removed ? nil : $0 }
+        }
     }
 
-    private func editSubcategory(_ categoryID: UUID, _ subcategoryID: UUID, _ change: @escaping (inout Subcategory) -> Void) {
+    /// The shortcut target for a folder, subfolder or snippet.
+    func target(_ categoryID: UUID, _ subcategoryID: UUID? = nil, snippet snippetID: UUID? = nil) -> ShortcutTarget? {
+        guard let place = names(categoryID, subcategoryID) else { return nil }
+        let (folder, sub) = place
+        if let snippetID {
+            guard let title = snippet(snippetID, in: categoryID, subcategoryID)?.title else { return nil }
+            return .snippet(folder, sub, title)
+        }
+        if let sub { return .subfolder(folder, sub) }
+        return .folder(folder)
+    }
+
+    private func names(_ categoryID: UUID, _ subcategoryID: UUID?) -> (String, String?)? {
+        guard let folder = category(categoryID)?.title else { return nil }
+        if let subcategoryID {
+            guard let sub = subcategory(categoryID, subcategoryID)?.title else { return nil }
+            return (folder, sub)
+        }
+        return (folder, nil)
+    }
+
+    @discardableResult
+    private func editSubcategory(_ categoryID: UUID, _ subcategoryID: UUID, _ change: (inout Subcategory) -> Void) -> Bool {
         commit { categories in
             guard let c = categories.firstIndex(where: { $0.id == categoryID }),
                   let s = categories[c].subcategories.firstIndex(where: { $0.id == subcategoryID }) else { return }
@@ -170,14 +236,14 @@ final class SnippetStore: ObservableObject {
         }
     }
 
-    private func editSnippets(_ categoryID: UUID, _ subcategoryID: UUID?, _ change: @escaping (inout [Snippet]) -> Void) {
+    @discardableResult
+    private func editSnippets(_ categoryID: UUID, _ subcategoryID: UUID?, _ change: (inout [Snippet]) -> Void) -> Bool {
         if let subcategoryID {
-            editSubcategory(categoryID, subcategoryID) { change(&$0.snippets) }
-        } else {
-            commit { categories in
-                guard let c = categories.firstIndex(where: { $0.id == categoryID }) else { return }
-                change(&categories[c].snippets)
-            }
+            return editSubcategory(categoryID, subcategoryID) { change(&$0.snippets) }
+        }
+        return commit { categories in
+            guard let c = categories.firstIndex(where: { $0.id == categoryID }) else { return }
+            change(&categories[c].snippets)
         }
     }
 

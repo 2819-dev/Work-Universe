@@ -1,6 +1,7 @@
 import AppKit
 
-// Draws the app icon (a white scissors on a rounded purple square) as a 1024px PNG.
+// Draws the QuickSnip app icon as a 1024px PNG: white scissors on a
+// graphite tile with a blue accent.
 let size = 1024
 let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size,
                            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
@@ -8,12 +9,26 @@ let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: 
 NSGraphicsContext.saveGraphicsState()
 NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
 
-let tile = NSBezierPath(roundedRect: NSRect(x: 100, y: 100, width: 824, height: 824), xRadius: 185, yRadius: 185)
-NSGradient(starting: NSColor(srgbRed: 0.42, green: 0.36, blue: 0.95, alpha: 1),
-           ending: NSColor(srgbRed: 0.27, green: 0.20, blue: 0.70, alpha: 1))!.draw(in: tile, angle: -90)
+let tileRect = NSRect(x: 100, y: 100, width: 824, height: 824)
+let tile = NSBezierPath(roundedRect: tileRect, xRadius: 185, yRadius: 185)
+NSGradient(starting: NSColor(srgbRed: 0.20, green: 0.22, blue: 0.27, alpha: 1),
+           ending: NSColor(srgbRed: 0.09, green: 0.10, blue: 0.13, alpha: 1))!.draw(in: tile, angle: -90)
+
+// Soft blue glow behind the scissors.
+NSGraphicsContext.saveGraphicsState()
+tile.addClip()
+let glow = NSGradient(colors: [NSColor(srgbRed: 0.18, green: 0.42, blue: 0.96, alpha: 0.55),
+                               NSColor(srgbRed: 0.18, green: 0.42, blue: 0.96, alpha: 0)])!
+glow.draw(fromCenter: NSPoint(x: 512, y: 470), radius: 0, toCenter: NSPoint(x: 512, y: 470), radius: 430, options: [])
+NSGraphicsContext.restoreGraphicsState()
+
+// Subtle top highlight on the tile edge.
+NSColor(white: 1, alpha: 0.08).setStroke()
+tile.lineWidth = 4
+tile.stroke()
 
 if let symbol = NSImage(systemSymbolName: "scissors", accessibilityDescription: nil)?
-    .withSymbolConfiguration(.init(pointSize: 420, weight: .semibold)) {
+    .withSymbolConfiguration(.init(pointSize: 400, weight: .semibold)) {
     let white = NSImage(size: symbol.size, flipped: false) { rect in
         symbol.draw(in: rect)
         NSColor.white.set()

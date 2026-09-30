@@ -37,36 +37,45 @@ jobs:
 
       - name: Launch check and preview screenshots
         run: |
-          BIN="app/build/Snippet Menu.app/Contents/MacOS/SnippetMenu"
-          LIBRARY="$HOME/Library/Application Support/Snippet Menu/snippets.txt"
+          BIN="app/build/QuickSnip.app/Contents/MacOS/QuickSnip"
+          LIBRARY_DIR="$HOME/Library/Application Support/QuickSnip"
           mkdir -p previews
+          cp app/build/icon.png previews/icon.png
           # First launch: a new, empty library.
           "$BIN" & PID=$!
           sleep 6
           kill -0 $PID || { echo "The app quit unexpectedly at launch"; exit 1; }
           screencapture -x previews/0-first-launch.png || true
           kill $PID; sleep 1
-          cat "$LIBRARY"
+          cat "$LIBRARY_DIR/snippets.txt"
           # Fill the library with example content for the remaining previews.
           defaults write io.github.2819-dev.snippetmenu removedSampleSnippets -bool true
-          cp app/Resources/sample-1.1.txt "$LIBRARY"
-          SNIPPETMENU_SHOW_PANEL=1 SNIPPETMENU_PREVIEW_UPDATE=1 "$BIN" & PID=$!
+          cp app/Resources/sample-1.1.txt "$LIBRARY_DIR/snippets.txt"
+          cp app/Tests/preview/quick-snippets.json app/Tests/preview/shortcuts.json "$LIBRARY_DIR/"
+          QUICKSNIP_PREVIEW=home QUICKSNIP_PREVIEW_UPDATE=1 "$BIN" & PID=$!
           sleep 6
           kill -0 $PID || { echo "The app quit unexpectedly"; exit 1; }
-          screencapture -x previews/1-categories.png || true
+          screencapture -x previews/1-home.png || true
           kill $PID; sleep 1
-          SNIPPETMENU_SHOW_PANEL=category "$BIN" & PID=$!
-          sleep 6
-          kill -0 $PID || { echo "The app quit unexpectedly"; exit 1; }
-          screencapture -x previews/2-category.png || true
-          kill $PID; sleep 1
-          for page in add subcategory; do
-            SNIPPETMENU_SHOW_PANEL=$page "$BIN" & PID=$!
+          for page in folder add subfolder notepad shortcuts about support; do
+            QUICKSNIP_PREVIEW=$page "$BIN" & PID=$!
             sleep 6
-            kill -0 $PID || { echo "The app quit unexpectedly"; exit 1; }
-            screencapture -x "previews/3-$page.png" || true
+            kill -0 $PID || { echo "The app quit unexpectedly on $page"; exit 1; }
+            screencapture -x "previews/2-$page.png" || true
             kill $PID; sleep 1
           done
+
+      - name: Test renaming from Snippet Menu
+        continue-on-error: true
+        run: |
+          mkdir -p "$HOME/RenameTest"
+          cp -R app/build/QuickSnip.app "$HOME/RenameTest/Snippet Menu.app"
+          open "$HOME/RenameTest/Snippet Menu.app"
+          sleep 10
+          ls "$HOME/RenameTest"
+          pgrep -fl "RenameTest/QuickSnip.app" && echo "Renamed app reopened" || echo "Renamed app did not reopen"
+          pkill -f "RenameTest/" || true
+          [[ -d "$HOME/RenameTest/QuickSnip.app" && ! -e "$HOME/RenameTest/Snippet Menu.app" ]]
 
       - name: Test installing an update
         continue-on-error: true
@@ -74,17 +83,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           LATEST="$(gh release view --json tagName -q .tagName)"; LATEST="${LATEST#v}"
-          TEST_APP="$HOME/UpdateTest/Snippet Menu.app"
+          TEST_APP="$HOME/UpdateTest/QuickSnip.app"
           mkdir -p "$HOME/UpdateTest"
-          cp -R "app/build/Snippet Menu.app" "$TEST_APP"
+          cp -R app/build/QuickSnip.app "$TEST_APP"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 0.1.0" "$TEST_APP/Contents/Info.plist"
           codesign --force --deep --sign - "$TEST_APP"
-          SNIPPETMENU_TEST_AUTO_UPDATE=1 "$TEST_APP/Contents/MacOS/SnippetMenu" &
+          QUICKSNIP_TEST_AUTO_UPDATE=1 "$TEST_APP/Contents/MacOS/QuickSnip" &
           sleep 30
           INSTALLED="$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$TEST_APP/Contents/Info.plist")"
           echo "Latest release: $LATEST, installed after update: $INSTALLED"
-          pgrep -fl "UpdateTest/Snippet Menu.app" && echo "Updated app reopened" || echo "Updated app did not reopen"
-          pkill -f "UpdateTest/Snippet Menu.app" || true
+          pgrep -fl "UpdateTest/" && echo "Updated app reopened" || echo "Updated app did not reopen"
+          pkill -f "UpdateTest/" || true
           [[ "$INSTALLED" == "$LATEST" ]]
 
       - name: Save previews for review
@@ -100,8 +109,8 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Snippet-Menu
-          path: app/build/Snippet-Menu.zip
+          name: QuickSnip
+          path: app/build/QuickSnip.zip
 
       - uses: actions/upload-artifact@v4
         with:
@@ -117,7 +126,8 @@ jobs:
             echo "Release v$VERSION already exists. Change app/VERSION to publish a new one."
             exit 0
           fi
-          gh release create "v$VERSION" app/build/Snippet-Menu.zip \
+          # Snippet-Menu.zip is the same download, for versions before the rename.
+          gh release create "v$VERSION" app/build/QuickSnip.zip app/build/Snippet-Menu.zip \
             --target "$GITHUB_SHA" \
-            --title "Snippet Menu v$VERSION" \
+            --title "QuickSnip $VERSION" \
             --notes-file app/RELEASE_NOTES.md

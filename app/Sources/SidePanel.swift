@@ -12,6 +12,10 @@ enum PanelScreen: Equatable {
     case renameSubcategory(UUID, UUID)
     case snippetEditor(category: UUID, subcategory: UUID?, snippet: UUID?)
     case shortcut
+    case itemShortcut(ShortcutTarget)
+    case shortcutList
+    case about
+    case support
 }
 
 enum UpdateState: Equatable {
@@ -29,12 +33,14 @@ final class PanelModel: ObservableObject {
 
     // Supplied by the app delegate.
     var hidePanel: () -> Void = {}
-    var applyShortcut: (Shortcut) -> Bool = { _ in false }
-    var pauseShortcut: (Bool) -> Void = { _ in }
+    /// Returns a message when the shortcut can't be used.
+    var applyShortcut: (Shortcut) -> String? = { _ in nil }
+    var pauseShortcuts: (Bool) -> Void = { _ in }
     var isOpenAtLogin: () -> Bool = { false }
     var setOpenAtLogin: (Bool) -> Void = { _ in }
     var startUpdate: () -> Void = {}
     var checkForUpdates: () -> Void = {}
+    var openQuickSnippet: (UUID) -> Void = { _ in }
 
     init(shortcut: Shortcut) {
         self.shortcut = shortcut
@@ -52,9 +58,7 @@ final class PanelModel: ObservableObject {
     }
 
     func copy(_ snippet: Snippet) {
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.setString(snippet.text, forType: .string)
+        copyToClipboard(snippet.text)
         HUD.show("Copied: \(snippet.title)")
         copiedSnippetID = snippet.id
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) { [weak self] in
@@ -79,7 +83,7 @@ final class SidePanelController {
 
     var isVisible: Bool { wantsVisible }
 
-    init(store: SnippetStore, model: PanelModel) {
+    init(store: SnippetStore, quickSnippets: QuickSnippetStore, shortcuts: ShortcutManager, model: PanelModel) {
         self.store = store
         panel = SidePanelWindow(contentRect: NSRect(x: 0, y: 0, width: Self.width, height: 600),
                                 styleMask: [.borderless], backing: .buffered, defer: false)
@@ -100,7 +104,8 @@ final class SidePanelController {
         background.layer?.cornerRadius = 14
         background.layer?.masksToBounds = true
 
-        let hosting = NSHostingView(rootView: PanelView(store: store, model: model))
+        let hosting = NSHostingView(rootView: PanelView(store: store, quickSnippets: quickSnippets,
+                                                         shortcuts: shortcuts, model: model))
         hosting.frame = background.bounds
         hosting.autoresizingMask = [.width, .height]
         background.addSubview(hosting)

@@ -1,36 +1,36 @@
-SNIPPET MENU
+QUICKSNIP
 Your saved replies, one click away.
 
 
 INSTALL
 
-1. Drag "Snippet Menu" into your Applications folder.
-2. Open Applications and double-click "Snippet Menu".
+1. Drag "QuickSnip" into your Applications folder.
+2. Open Applications and double-click "QuickSnip".
 
 
 THE FIRST TIME YOU OPEN IT
 
-Snippet Menu is distributed independently rather than through the App Store,
+QuickSnip is distributed independently rather than through the App Store,
 so macOS asks you to confirm once:
 
-1. When macOS says it can't verify Snippet Menu, click "Done".
+1. When macOS says it can't verify QuickSnip, click "Done".
 2. Open System Settings > Privacy & Security.
 3. Scroll down to "Security" and click "Open Anyway".
 4. Confirm with your password or Touch ID, then click "Open Anyway".
 
-A scissors icon appears in your menu bar and your snippets panel opens.
+A scissors icon appears in your menu bar and the QuickSnip panel opens.
 
 
 USING IT
 
-- Click the scissors in the menu bar to open your snippets panel.
-- Click a category, then click a snippet to copy it.
+- Click the scissors in the menu bar to open the QuickSnip panel.
+- Click a folder, then click a snippet to copy it.
 - Press Command + V to paste it anywhere.
 - Press Control + Option + S in any app for a quick menu at your pointer.
-- Inside a category, hover over the blue + button to add a snippet or subcategory.
-- Right-click anything to rename, edit or delete it.
-- Click the ••• button for settings, including Open at Login.
+- Use the blue + button to add folders, subfolders, snippets and Quick Snippets.
+- Right-click anything to rename, delete or give it its own keyboard shortcut.
+- Click the ••• button for settings, About and Support.
 - When an update is available, click "Update" at the bottom of the panel.
 
 
-Full guide: https://github.com/2819-dev/Work-Universe
+Guide and support: https://github.com/2819-dev/Work-Universe

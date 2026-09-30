@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>Snippet Menu</string>
+    <string>QuickSnip</string>
     <key>CFBundleDisplayName</key>
-    <string>Snippet Menu</string>
+    <string>QuickSnip</string>
     <key>CFBundleIdentifier</key>
     <string>io.github.2819-dev.snippetmenu</string>
     <key>CFBundleExecutable</key>
-    <string>SnippetMenu</string>
+    <string>QuickSnip</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundlePackageType</key>

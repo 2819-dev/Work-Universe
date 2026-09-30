@@ -1,10 +1,11 @@
 import AppKit
 
-// Checks GitHub for a newer release of Snippet Menu and installs it in place.
+// Checks GitHub for a newer release of QuickSnip and installs it in place.
 final class Updater {
     static let latestReleaseAPI = URL(string: "https://api.github.com/repos/2819-dev/Work-Universe/releases/latest")!
     static let releasesPage = URL(string: "https://github.com/2819-dev/Work-Universe/releases/latest")!
-    private static let assetName = "Snippet-Menu.zip"
+    /// The download's name; earlier releases used "Snippet-Menu.zip".
+    private static let assetNames = ["QuickSnip.zip", "Snippet-Menu.zip"]
     private static let checkInterval: TimeInterval = 6 * 60 * 60
 
     private let model: PanelModel
@@ -45,7 +46,7 @@ final class Updater {
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let tag = json["tag_name"] as? String,
               let assets = json["assets"] as? [[String: Any]],
-              let asset = assets.first(where: { ($0["name"] as? String) == assetName }),
+              let asset = assetNames.lazy.compactMap({ name in assets.first { ($0["name"] as? String) == name } }).first,
               let link = asset["browser_download_url"] as? String,
               let url = URL(string: link) else { return nil }
         return (tag.hasPrefix("v") ? String(tag.dropFirst()) : tag, url)
@@ -57,14 +58,14 @@ final class Updater {
             available = release
             model.update = .available(version: release.version)
             // Used by the automated build to test installing an update.
-            if ProcessInfo.processInfo.environment["SNIPPETMENU_TEST_AUTO_UPDATE"] != nil { install() }
+            if ProcessInfo.processInfo.environment["QUICKSNIP_TEST_AUTO_UPDATE"] != nil { install() }
             return
         }
         guard userInitiated else { return }
         let alert = NSAlert()
         if reachable {
             alert.messageText = "You're up to date"
-            alert.informativeText = "Snippet Menu \(Self.currentVersion) is the latest version."
+            alert.informativeText = "\(Brand.name) \(Self.currentVersion) is the latest version."
         } else {
             alert.messageText = "Couldn't check for updates"
             alert.informativeText = "Make sure you're connected to the internet, then try again."
@@ -83,7 +84,7 @@ final class Updater {
         guard appURL.pathExtension == "app",
               !appURL.path.contains("/AppTranslocation/"),
               FileManager.default.isWritableFile(atPath: folder.path) else {
-            model.update = .failed("Snippet Menu can only update itself when it's in your Applications folder. Move it there, or download the update from the website.")
+            model.update = .failed("\(Brand.name) can only update itself when it's in your Applications folder. Move it there, or download the update from the website.")
             return
         }
 

@@ -69,6 +69,23 @@ check(broken.problems.count == 2, "problems: \(broken.problems)")
 check(broken.snippetCount == 1, "count: \(broken.snippetCount)")
 check(broken.categories[0].snippets[0].text == "hello\n#hashtag stays text", "text: \(broken.categories[0].snippets[0].text)")
 
+// Shortcut targets follow renames and deletions.
+let folderTarget = ShortcutTarget.folder("Rules")
+let subTarget = ShortcutTarget.subfolder("Rules", "Spam")
+let snippetTarget = ShortcutTarget.snippet("Rules", "Spam", "Spam removed")
+let topSnippet = ShortcutTarget.snippet("Rules", nil, "Be kind")
+let quickTarget = ShortcutTarget.quickSnippet(UUID())
+check(folderTarget.renamingFolder("Rules", to: "Guidelines") == .folder("Guidelines"), "rename folder")
+check(snippetTarget.renamingFolder("Rules", to: "Guidelines") == .snippet("Guidelines", "Spam", "Spam removed"), "rename folder moves snippet")
+check(subTarget.renamingSubfolder(in: "Rules", "Spam", to: "Junk") == .subfolder("Rules", "Junk"), "rename subfolder")
+check(snippetTarget.renamingSubfolder(in: "Rules", "Spam", to: "Junk") == .snippet("Rules", "Junk", "Spam removed"), "rename subfolder moves snippet")
+check(topSnippet.renamingSubfolder(in: "Rules", "Spam", to: "Junk") == topSnippet, "top-level snippet unaffected")
+check(snippetTarget.renamingSnippet(in: "Rules", "Spam", "Spam removed", to: "Removed") == .snippet("Rules", "Spam", "Removed"), "rename snippet")
+check(folderTarget.isInside(folder: "Rules") && snippetTarget.isInside(folder: "Rules") && !quickTarget.isInside(folder: "Rules"), "inside folder")
+check(snippetTarget.isInside(folder: "Rules", subfolder: "Spam") && !topSnippet.isInside(folder: "Rules", subfolder: "Spam"), "inside subfolder")
+let encoded = try! JSONEncoder().encode([ShortcutBinding(target: snippetTarget, keyCode: 1, modifiers: 4096)])
+check((try? JSONDecoder().decode([ShortcutBinding].self, from: encoded))?.first?.target == snippetTarget, "bindings save and load")
+
 // Keyboard shortcuts
 check(Shortcut.fallback.display == "⌃⌥S", "default display")
 check(Shortcut.parse("Cmd + Shift + M")?.display == "⇧⌘M", "cmd shift m")

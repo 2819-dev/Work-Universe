@@ -89,14 +89,14 @@ enum SnippetParser {
                 currentSubcategory = nil
             case 2:
                 if result.categories.isEmpty {
-                    result.problems.append("Line \(lineNumber): the subcategory “\(heading.title)” isn't inside a category.")
+                    result.problems.append("Line \(lineNumber): the subfolder “\(heading.title)” isn't inside a folder.")
                 } else {
                     result.categories[result.categories.count - 1].subcategories.append(Subcategory(title: heading.title))
                     currentSubcategory = result.categories[result.categories.count - 1].subcategories.count - 1
                 }
             default:
                 if result.categories.isEmpty {
-                    result.problems.append("Line \(lineNumber): the snippet “\(heading.title)” isn't inside a category.")
+                    result.problems.append("Line \(lineNumber): the snippet “\(heading.title)” isn't inside a folder.")
                 } else {
                     pendingTitle = heading.title
                     pendingPlace = (result.categories.count - 1, currentSubcategory)
@@ -275,4 +275,60 @@ enum AppVersion {
         let trimmed = version.hasPrefix("v") ? String(version.dropFirst()) : version
         return trimmed.split(separator: ".").map { Int($0.prefix(while: \.isNumber)) ?? 0 }
     }
+}
+
+// What a keyboard shortcut opens. Folders and snippets are identified by
+// their names, which are kept up to date when they're renamed.
+enum ShortcutTarget: Codable, Hashable {
+    case folder(String)
+    case subfolder(String, String)
+    case snippet(String, String?, String)   // folder, subfolder, snippet title
+    case quickSnippet(UUID)
+
+    func renamingFolder(_ old: String, to new: String) -> ShortcutTarget {
+        switch self {
+        case .folder(let f) where f == old: return .folder(new)
+        case .subfolder(let f, let s) where f == old: return .subfolder(new, s)
+        case .snippet(let f, let s, let t) where f == old: return .snippet(new, s, t)
+        default: return self
+        }
+    }
+
+    func renamingSubfolder(in folder: String, _ old: String, to new: String) -> ShortcutTarget {
+        switch self {
+        case .subfolder(let f, let s) where f == folder && s == old: return .subfolder(f, new)
+        case .snippet(let f, let s, let t) where f == folder && s == old: return .snippet(f, new, t)
+        default: return self
+        }
+    }
+
+    func renamingSnippet(in folder: String, _ subfolder: String?, _ old: String, to new: String) -> ShortcutTarget {
+        if case .snippet(let f, let s, let t) = self, f == folder, s == subfolder, t == old {
+            return .snippet(f, s, new)
+        }
+        return self
+    }
+
+    /// True for the folder itself and everything inside it.
+    func isInside(folder: String) -> Bool {
+        switch self {
+        case .folder(let f), .subfolder(let f, _), .snippet(let f, _, _): return f == folder
+        case .quickSnippet: return false
+        }
+    }
+
+    /// True for the subfolder itself and every snippet inside it.
+    func isInside(folder: String, subfolder: String) -> Bool {
+        switch self {
+        case .subfolder(let f, let s): return f == folder && s == subfolder
+        case .snippet(let f, let s, _): return f == folder && s == subfolder
+        default: return false
+        }
+    }
+}
+
+struct ShortcutBinding: Codable, Equatable {
+    var target: ShortcutTarget
+    var keyCode: UInt32
+    var modifiers: UInt32
 }

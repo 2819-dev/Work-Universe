@@ -1,0 +1,5 @@
+[
+  { "target" : { "folder" : { "_0" : "Welcome" } }, "keyCode" : 13, "modifiers" : 6144 },
+  { "target" : { "snippet" : { "_0" : "Rule Reminders", "_1" : "Spam & Self-Promotion", "_2" : "Spam removed" } }, "keyCode" : 18, "modifiers" : 6144 },
+  { "target" : { "quickSnippet" : { "_0" : "3B5C7E2A-1D4F-4A6B-9C8D-2E1F0A9B8C7D" } }, "keyCode" : 45, "modifiers" : 6144 }
+]
