@@ -192,4 +192,4 @@ The shortcut is set in the top lines of `init.lua`. You don't need this if you u
 
 ## For maintainers: how releases are made
 
-The app's source code is in `app/`. GitHub Actions builds it on a Mac for every push to `main` (see `.github/workflows/build.yml`). Pushing a tag like `v1.0.1` also publishes a release with `Snippet-Menu.zip`. The app is ad-hoc signed, which is free; it isn't notarized, which is why step 3 above is needed.
+The app's source code is in `app/`. GitHub Actions builds it on a Mac for every push to `main` (see `.github/workflows/build.yml`). To publish a release with `Snippet-Menu.zip`, go to **Actions → Build Mac app → Run workflow** and type a version number (e.g. `1.0.1`), or push a tag like `v1.0.1`. The app is ad-hoc signed, which is free; it isn't notarized, which is why step 3 above is needed.
