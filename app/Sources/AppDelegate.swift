@@ -63,10 +63,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func showPanelForLaunch() {
         panel.show()
-        // Used to capture preview images of a category page.
-        if ProcessInfo.processInfo.environment["SNIPPETMENU_SHOW_PANEL"] == "category",
-           let first = store.categories.first(where: { !$0.subcategories.isEmpty }) ?? store.categories.first {
-            model.push(.category(first.id))
+        // Used to capture preview images of the panel's pages.
+        let preview = ProcessInfo.processInfo.environment["SNIPPETMENU_SHOW_PANEL"] ?? ""
+        guard ["category", "add", "subcategory"].contains(preview),
+              let first = store.categories.first(where: { !$0.subcategories.isEmpty }) ?? store.categories.first
+        else { return }
+        model.push(.category(first.id))
+        if preview == "subcategory", let sub = first.subcategories.first {
+            model.push(.subcategory(first.id, sub.id))
         }
     }
 

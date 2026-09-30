@@ -49,7 +49,14 @@ jobs:
           sleep 6
           kill -0 $PID || { echo "The app quit unexpectedly"; exit 1; }
           screencapture -x previews/2-category.png || true
-          kill $PID
+          kill $PID; sleep 1
+          for page in add subcategory; do
+            SNIPPETMENU_SHOW_PANEL=$page "$BIN" & PID=$!
+            sleep 6
+            kill -0 $PID || { echo "The app quit unexpectedly"; exit 1; }
+            screencapture -x "previews/3-$page.png" || true
+            kill $PID; sleep 1
+          done
 
       - name: Save previews for review
         if: github.ref == 'refs/heads/main'

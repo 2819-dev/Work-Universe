@@ -559,6 +559,12 @@ private struct AddButton: View {
         .onHover { inside in
             if inside && isEnabled && options.count > 1 { showingChoices = true }
         }
+        .onAppear {
+            // Used to capture a preview image of the choices.
+            if ProcessInfo.processInfo.environment["SNIPPETMENU_SHOW_PANEL"] == "add" && options.count > 1 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { showingChoices = true }
+            }
+        }
         .popover(isPresented: $showingChoices, arrowEdge: .bottom) {
             VStack(alignment: .leading, spacing: 2) {
                 ForEach(options) { option in
