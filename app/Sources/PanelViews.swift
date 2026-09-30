@@ -314,7 +314,7 @@ private struct SnippetEditorScreen: View {
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Title").font(.callout.weight(.medium))
-                    TextField("", text: $title, prompt: Text("Shown in the menu"))
+                    TextField("", text: $title)
                         .textFieldStyle(.roundedBorder)
                         .focused($titleFocused)
                 }
@@ -491,6 +491,15 @@ private struct PanelFooter: View {
     var body: some View {
         VStack(spacing: 0) {
             Divider()
+            content
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+        }
+    }
+
+    @ViewBuilder private var content: some View {
+        switch model.update {
+        case .none:
             HStack(spacing: 6) {
                 Image(systemName: "keyboard").foregroundColor(.secondary)
                 Text("Press \(model.shortcut.display) in any app for quick access")
@@ -498,8 +507,45 @@ private struct PanelFooter: View {
                 Spacer()
             }
             .font(.caption)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+
+        case .available(let version):
+            HStack(spacing: 10) {
+                Image(systemName: "arrow.down.circle.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(.accentColor)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Update available").font(.callout.weight(.semibold))
+                    Text("Version \(version) is ready to install").font(.caption).foregroundColor(.secondary)
+                }
+                Spacer()
+                Button("Update", action: model.startUpdate)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+            }
+
+        case .installing:
+            HStack(spacing: 10) {
+                ProgressView().controlSize(.small)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Updating…").font(.callout.weight(.semibold))
+                    Text("Snippet Menu will reopen in a moment").font(.caption).foregroundColor(.secondary)
+                }
+                Spacer()
+            }
+
+        case .failed(let message):
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.orange)
+                    Text(message).font(.caption).fixedSize(horizontal: false, vertical: true)
+                }
+                HStack {
+                    Button("Try Again", action: model.startUpdate).controlSize(.small)
+                    Button("Open Download Page") { NSWorkspace.shared.open(Updater.releasesPage) }
+                        .controlSize(.small)
+                    Spacer()
+                }
+            }
         }
     }
 }
@@ -619,6 +665,9 @@ private struct MoreMenu: View {
                     NSWorkspace.shared.open(SnippetStore.folderURL)
                 }
             }
+            Divider()
+            Button("Check for Updates…", action: model.checkForUpdates)
+            Text("Version \(Updater.currentVersion)")
             Divider()
             Button("Quit Snippet Menu") { NSApp.terminate(nil) }
         } label: {
@@ -786,7 +835,7 @@ private struct StatusBanners: View {
                     if store.fileExists {
                         NSWorkspace.shared.activateFileViewerSelecting([SnippetStore.fileURL])
                     } else {
-                        store.createStarterLibrary()
+                        store.createEmptyLibrary()
                     }
                 }
             }

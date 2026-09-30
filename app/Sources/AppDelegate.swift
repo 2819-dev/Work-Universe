@@ -8,22 +8,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var model: PanelModel!
     private var panel: SidePanelController!
     private var statusItem: NSStatusItem!
+    private var updater: Updater!
 
     private enum Keys {
         static let launchedBefore = "createdExampleFile"
         static let shortcutKeyCode = "shortcutKeyCode"
         static let shortcutModifiers = "shortcutModifiers"
+        static let removedSamples = "removedSampleSnippets"
+        static let lastVersion = "lastVersion"
     }
 
     // MARK: Start up
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let firstLaunch = !UserDefaults.standard.bool(forKey: Keys.launchedBefore)
+        let defaults = UserDefaults.standard
+        let firstLaunch = !defaults.bool(forKey: Keys.launchedBefore)
         if firstLaunch {
-            if !store.fileExists { store.createStarterLibrary() }
-            UserDefaults.standard.set(true, forKey: Keys.launchedBefore)
+            if !store.fileExists { store.createEmptyLibrary() }
+            defaults.set(true, forKey: Keys.launchedBefore)
         }
         store.reload()
+        if !defaults.bool(forKey: Keys.removedSamples) {
+            store.removeSampleSnippets()
+            defaults.set(true, forKey: Keys.removedSamples)
+        }
+
+        let previousVersion = defaults.string(forKey: Keys.lastVersion)
+        defaults.set(Updater.currentVersion, forKey: Keys.lastVersion)
+        let justUpdated = previousVersion != nil && previousVersion != Updater.currentVersion
 
         model = PanelModel(shortcut: savedShortcut())
         model.applyShortcut = { [weak self] shortcut in self?.applyShortcut(shortcut) ?? false }
@@ -34,6 +46,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.isOpenAtLogin = { SMAppService.mainApp.status == .enabled }
         model.setOpenAtLogin = { [weak self] enabled in self?.setOpenAtLogin(enabled) }
         panel = SidePanelController(store: store, model: model)
+        updater = Updater(model: model)
+        updater.start()
+        if ProcessInfo.processInfo.environment["SNIPPETMENU_PREVIEW_UPDATE"] != nil {
+            model.update = .available(version: "9.9.9") // used to capture a preview image of the update footer
+        }
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
@@ -56,6 +73,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let problem = store.loadError != nil || !store.problems.isEmpty
         if firstLaunch || problem || ProcessInfo.processInfo.environment["SNIPPETMENU_SHOW_PANEL"] != nil {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self.showPanelForLaunch() }
+        } else if justUpdated {
+            HUD.show("Snippet Menu has been updated to version \(Updater.currentVersion)", seconds: 3)
         } else {
             HUD.show("Snippet Menu is ready · \(model.shortcut.display) opens your snippets", seconds: 2.5)
         }
@@ -132,6 +151,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         menu.addItem(.separator())
+        if case .available(let version) = model.update {
+            let update = NSMenuItem(title: "Update Available (Version \(version))…", action: #selector(openPanel), keyEquivalent: "")
+            update.target = self
+            menu.addItem(update)
+        }
         let manage = NSMenuItem(title: "Manage Snippets…", action: #selector(openPanel), keyEquivalent: "")
         manage.target = self
         menu.addItem(manage)

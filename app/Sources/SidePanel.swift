@@ -14,10 +14,18 @@ enum PanelScreen: Equatable {
     case shortcut
 }
 
+enum UpdateState: Equatable {
+    case none
+    case available(version: String)
+    case installing
+    case failed(String)
+}
+
 final class PanelModel: ObservableObject {
     @Published var stack: [PanelScreen] = [.categories]
     @Published var shortcut: Shortcut
     @Published var copiedSnippetID: UUID?
+    @Published var update: UpdateState = .none
 
     // Supplied by the app delegate.
     var hidePanel: () -> Void = {}
@@ -25,6 +33,8 @@ final class PanelModel: ObservableObject {
     var pauseShortcut: (Bool) -> Void = { _ in }
     var isOpenAtLogin: () -> Bool = { false }
     var setOpenAtLogin: (Bool) -> Void = { _ in }
+    var startUpdate: () -> Void = {}
+    var checkForUpdates: () -> Void = {}
 
     init(shortcut: Shortcut) {
         self.shortcut = shortcut

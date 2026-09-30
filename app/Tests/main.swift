@@ -6,10 +6,11 @@ func check(_ condition: Bool, _ message: String, line: Int = #line) {
     if !condition { failures += 1; print("FAIL (line \(line)): \(message)") }
 }
 
-// The starter library that ships with the app.
-let starterText = try! String(contentsOfFile: CommandLine.arguments[1], encoding: .utf8)
-let starter = SnippetParser.parse(starterText)
-check(starter.problems.isEmpty, "starter has problems: \(starter.problems)")
+// The sample libraries that earlier versions came with.
+let sample10 = SnippetParser.parse(try! String(contentsOfFile: CommandLine.arguments[1], encoding: .utf8))
+let starter = SnippetParser.parse(try! String(contentsOfFile: CommandLine.arguments[2], encoding: .utf8))
+check(sample10.snippetCount == 10, "1.0 sample count: \(sample10.snippetCount)")
+check(starter.problems.isEmpty, "sample has problems: \(starter.problems)")
 check(starter.categories.map(\.title) == ["Welcome", "Rule Reminders", "Moderation Actions", "Support"],
       "categories: \(starter.categories.map(\.title))")
 check(starter.categories[1].subcategories.map(\.title) == ["Spam & Self-Promotion", "Civility", "Off-Topic"],
@@ -19,8 +20,26 @@ let warning = starter.categories[2].snippets[0]
 check(warning.title == "Formal warning", "title")
 check(warning.text.hasPrefix("Hello,\n\nThis is a formal warning") && warning.text.hasSuffix("The Moderation Team"),
       "multi-line text kept, blank lines trimmed: \(warning.text)")
-check(!starterText.contains("___") && !starterText.lowercased().contains("lorem") && !starterText.contains("TODO"),
-      "starter library has no placeholders")
+
+// Removing the samples empties an untouched sample library...
+check(SampleCleanup.removeSamples([sample10, starter], from: starter.categories).isEmpty, "1.1 samples removed")
+check(SampleCleanup.removeSamples([sample10, starter], from: sample10.categories).isEmpty, "1.0 samples removed")
+// ...but keeps anything the user added or changed.
+var customized = starter.categories
+customized[0].snippets[0].text = "Welcome to our server! Changed by me."
+customized[1].subcategories[1].snippets.append(Snippet(title: "My own", text: "Mine"))
+customized.append(Category(title: "My Category"))
+let kept = SampleCleanup.removeSamples([sample10, starter], from: customized)
+check(kept.map(\.title) == ["Welcome", "Rule Reminders", "My Category"], "kept categories: \(kept.map(\.title))")
+check(kept[0].snippets.map(\.title) == ["Welcome new member"], "kept edited snippet")
+check(kept[1].subcategories.map(\.title) == ["Civility"] && kept[1].subcategories[0].snippets.map(\.title) == ["My own"],
+      "kept added snippet only")
+
+// Versions
+check(AppVersion.isNewer("1.2.0", than: "1.1.0"), "1.2.0 > 1.1.0")
+check(AppVersion.isNewer("v1.10.0", than: "1.9.3"), "1.10 > 1.9.3")
+check(!AppVersion.isNewer("1.1.0", than: "1.1.0"), "same version")
+check(!AppVersion.isNewer("1.0.9", than: "1.1"), "older")
 
 // Saving and reading back gives the same library.
 let saved = SnippetWriter.serialize(preamble: starter.preamble, categories: starter.categories)

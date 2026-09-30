@@ -30,6 +30,7 @@ USING IT
 - Inside a category, hover over the blue + button to add a snippet or subcategory.
 - Right-click anything to rename, edit or delete it.
 - Click the ••• button for settings, including Open at Login.
+- When an update is available, click "Update" at the bottom of the panel.
 
 
 Full guide: https://github.com/2819-dev/Work-Universe

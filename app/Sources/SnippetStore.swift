@@ -64,21 +64,30 @@ final class SnippetStore: ObservableObject {
         loadError = nil
     }
 
-    @discardableResult
-    func createStarterLibrary() -> Bool {
-        guard !fileExists else { return true }
-        do {
-            guard let starter = Bundle.main.url(forResource: "starter-snippets", withExtension: "txt") else {
-                throw CocoaError(.fileNoSuchFile)
-            }
-            try FileManager.default.createDirectory(at: Self.folderURL, withIntermediateDirectories: true)
-            try FileManager.default.copyItem(at: starter, to: Self.fileURL)
-            reload()
-            return true
-        } catch {
-            showError("Your snippet library couldn't be created.", error)
-            return false
-        }
+    /// Starts a new, empty library.
+    func createEmptyLibrary() {
+        guard !fileExists else { return }
+        preamble = Self.defaultPreamble
+        categories = []
+        problems = []
+        loadError = nil
+        commit { $0 = [] }
+    }
+
+    /// Removes the sample snippets that earlier versions came with. Snippets
+    /// the user added or changed are kept.
+    func removeSampleSnippets() {
+        guard loadError == nil, fileExists else { return }
+        let samples = ["sample-1.0", "sample-1.1"]
+            .compactMap { Bundle.main.url(forResource: $0, withExtension: "txt") }
+            .compactMap { try? String(contentsOf: $0, encoding: .utf8) }
+            .map(SnippetParser.parse)
+        guard !samples.isEmpty else { return }
+        let cleaned = SampleCleanup.removeSamples(samples, from: categories)
+        let oldNotes = preamble.contains { $0.contains("HOW THIS FILE WORKS") || $0.contains("Replace the examples") }
+        guard cleaned != categories || oldNotes else { return }
+        if oldNotes { preamble = Self.defaultPreamble }
+        commit { $0 = cleaned }
     }
 
     // MARK: Looking things up

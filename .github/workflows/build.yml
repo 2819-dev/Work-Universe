@@ -38,12 +38,22 @@ jobs:
       - name: Launch check and preview screenshots
         run: |
           BIN="app/build/Snippet Menu.app/Contents/MacOS/SnippetMenu"
+          LIBRARY="$HOME/Library/Application Support/Snippet Menu/snippets.txt"
           mkdir -p previews
+          # First launch: a new, empty library.
           "$BIN" & PID=$!
           sleep 6
           kill -0 $PID || { echo "The app quit unexpectedly at launch"; exit 1; }
+          screencapture -x previews/0-first-launch.png || true
+          kill $PID; sleep 1
+          cat "$LIBRARY"
+          # Fill the library with example content for the remaining previews.
+          defaults write io.github.2819-dev.snippetmenu removedSampleSnippets -bool true
+          cp app/Resources/sample-1.1.txt "$LIBRARY"
+          SNIPPETMENU_SHOW_PANEL=1 SNIPPETMENU_PREVIEW_UPDATE=1 "$BIN" & PID=$!
+          sleep 6
+          kill -0 $PID || { echo "The app quit unexpectedly"; exit 1; }
           screencapture -x previews/1-categories.png || true
-          head -3 "$HOME/Library/Application Support/Snippet Menu/snippets.txt"
           kill $PID; sleep 1
           SNIPPETMENU_SHOW_PANEL=category "$BIN" & PID=$!
           sleep 6

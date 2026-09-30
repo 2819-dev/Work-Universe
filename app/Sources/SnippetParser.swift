@@ -223,3 +223,56 @@ struct Shortcut: Equatable {
         return Shortcut(keyCode: keyCode, carbonModifiers: relevant, display: display)
     }
 }
+
+// Removes the sample snippets that earlier versions of Snippet Menu came with,
+// keeping anything the user added or changed.
+enum SampleCleanup {
+    static func removeSamples(_ samples: [ParseResult], from categories: [Category]) -> [Category] {
+        var snippetKeys = Set<String>()
+        var subcategoryTitles = Set<String>()
+        var categoryTitles = Set<String>()
+        for sample in samples {
+            for category in sample.categories {
+                categoryTitles.insert(category.title)
+                category.snippets.forEach { snippetKeys.insert(key($0)) }
+                for sub in category.subcategories {
+                    subcategoryTitles.insert(sub.title)
+                    sub.snippets.forEach { snippetKeys.insert(key($0)) }
+                }
+            }
+        }
+
+        return categories.compactMap { original in
+            var category = original
+            category.snippets.removeAll { snippetKeys.contains(key($0)) }
+            category.subcategories = category.subcategories.compactMap { originalSub in
+                var sub = originalSub
+                sub.snippets.removeAll { snippetKeys.contains(key($0)) }
+                return sub.snippets.isEmpty && subcategoryTitles.contains(sub.title) ? nil : sub
+            }
+            let empty = category.snippets.isEmpty && category.subcategories.isEmpty
+            return empty && categoryTitles.contains(category.title) ? nil : category
+        }
+    }
+
+    private static func key(_ snippet: Snippet) -> String {
+        snippet.title + "\u{0}" + snippet.text
+    }
+}
+
+enum AppVersion {
+    /// True when `candidate` (like "1.2.0") is a later version than `current`.
+    static func isNewer(_ candidate: String, than current: String) -> Bool {
+        let a = numbers(candidate), b = numbers(current)
+        for i in 0..<max(a.count, b.count) {
+            let x = i < a.count ? a[i] : 0, y = i < b.count ? b[i] : 0
+            if x != y { return x > y }
+        }
+        return false
+    }
+
+    private static func numbers(_ version: String) -> [Int] {
+        let trimmed = version.hasPrefix("v") ? String(version.dropFirst()) : version
+        return trimmed.split(separator: ".").map { Int($0.prefix(while: \.isNumber)) ?? 0 }
+    }
+}

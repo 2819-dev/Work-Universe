@@ -42,9 +42,7 @@ Snippet Menu is distributed independently rather than through the App Store, so 
 
 You only need to do this once. From then on, Snippet Menu opens like any other app.
 
-When it opens, a **✂︎ scissors** icon appears in your menu bar and your snippets panel slides in from the right.
-
-> **Tip:** Snippet Menu comes with a set of ready-to-use moderation replies. Use them as they are, edit them, or delete them and add your own.
+When it opens, a **✂︎ scissors** icon appears in your menu bar and your snippets panel slides in from the right, ready for your first category.
 
 ---
 
@@ -93,6 +91,7 @@ Click the **•••** button at the top of the main panel.
 | **Keyboard Shortcut…** | Change the quick-access shortcut. Click **Change Shortcut** and press the keys you want, for example **⌘ Command + Shift + M**. |
 | **Open at Login** | Start Snippet Menu automatically when you turn on your Mac. Recommended. |
 | **Show Library in Finder** | Shows the file where your snippets are saved, so you can back it up. |
+| **Check for Updates…** | Checks whether a newer version of Snippet Menu is available. |
 | **Quit Snippet Menu** | Closes Snippet Menu. To reopen it, open it from Applications. |
 
 **Tip:** right-click the ✂︎ in the menu bar for the quick menu.
@@ -101,9 +100,9 @@ Click the **•••** button at the top of the main panel.
 
 ## Updating
 
-1. Click **•••** → **Quit Snippet Menu**.
-2. **[Download the latest version](https://github.com/2819-dev/Work-Universe/releases/latest/download/Snippet-Menu.zip)**, then drag the new app into **Applications** and choose **Replace**.
-3. Open it. If macOS asks again, follow **The first time you open it** above.
+Snippet Menu keeps itself up to date. When a new version is available, the bottom of the snippets panel shows **Update available**. Click **Update**, and Snippet Menu downloads the new version, installs it and reopens by itself within a few seconds.
+
+To check at any time, click **•••** → **Check for Updates…**
 
 Your snippets are saved separately from the app, so updating never affects them.
 
@@ -122,6 +121,9 @@ Another app may be using the same combination. Choose a different one under **�
 
 **"Open at Login" won't turn on.**
 Open **System Settings → General → Login Items**, click **+** under "Open at Login", and choose **Snippet Menu**.
+
+**Update couldn't be installed.**
+Snippet Menu can only update itself when it's in your **Applications** folder. Move it there and try again, or click **Open Download Page** and install the new version by hand (see **Install** above).
 
 **My snippets are missing.**
 If the panel says your library couldn't be found, it was moved or deleted. Restore it from a backup to the location shown by **Show Library in Finder**, or click **Create New Library** to start fresh.

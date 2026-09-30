@@ -12,7 +12,7 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
 echo "== Testing the snippet library"
 swiftc Sources/SnippetParser.swift Tests/main.swift -o "$OUT/tests"
-"$OUT/tests" Resources/starter-snippets.txt
+"$OUT/tests" Resources/sample-1.0.txt Resources/sample-1.1.txt
 
 echo "== Compiling (Apple Silicon + Intel)"
 for arch in arm64 x86_64; do
@@ -21,7 +21,7 @@ done
 lipo -create "$OUT/SnippetMenu-arm64" "$OUT/SnippetMenu-x86_64" -output "$APP/Contents/MacOS/SnippetMenu"
 
 sed "s/__VERSION__/$VERSION/g" Info.plist > "$APP/Contents/Info.plist"
-cp Resources/starter-snippets.txt "$APP/Contents/Resources/starter-snippets.txt"
+cp Resources/sample-1.0.txt Resources/sample-1.1.txt "$APP/Contents/Resources/"
 
 echo "== Making the icon"
 swiftc Tools/make-icon.swift -o "$OUT/make-icon"
