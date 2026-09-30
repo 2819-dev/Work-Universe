@@ -18,11 +18,15 @@ enum HotKey {
             }, 1, &eventType, nil, nil)
             handlerInstalled = true
         }
-        if let ref { UnregisterEventHotKey(ref) }
-        ref = nil
+        unregister()
         let id = EventHotKeyID(signature: OSType(0x534E_4950), id: 1) // "SNIP"
         let status = RegisterEventHotKey(shortcut.keyCode, shortcut.carbonModifiers, id,
                                          GetApplicationEventTarget(), 0, &ref)
         return status == noErr
+    }
+
+    static func unregister() {
+        if let ref { UnregisterEventHotKey(ref) }
+        ref = nil
     }
 }

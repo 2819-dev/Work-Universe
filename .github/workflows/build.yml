@@ -35,10 +35,31 @@ jobs:
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           app/build.sh "$VERSION"
 
+      - name: Launch check and preview screenshots
+        run: |
+          BIN="app/build/Snippet Menu.app/Contents/MacOS/SnippetMenu"
+          mkdir -p previews
+          "$BIN" & PID=$!
+          sleep 6
+          kill -0 $PID || { echo "The app quit unexpectedly at launch"; exit 1; }
+          screencapture -x previews/1-categories.png || true
+          head -3 "$HOME/Library/Application Support/Snippet Menu/snippets.txt"
+          kill $PID; sleep 1
+          SNIPPETMENU_SHOW_PANEL=category "$BIN" & PID=$!
+          sleep 6
+          kill -0 $PID || { echo "The app quit unexpectedly"; exit 1; }
+          screencapture -x previews/2-category.png || true
+          kill $PID
+
       - uses: actions/upload-artifact@v4
         with:
           name: Snippet-Menu
           path: app/build/Snippet-Menu.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: previews
+          path: previews
 
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'

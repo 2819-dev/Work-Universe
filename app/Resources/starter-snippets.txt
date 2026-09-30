@@ -1,0 +1,72 @@
+Snippet Menu library
+
+This file is managed by Snippet Menu. You can also edit it in any text editor:
+a line starting with "# " is a category, "## " is a subcategory, "### " is a snippet title,
+and the lines under a snippet title are the text that gets copied.
+
+
+# Welcome
+
+### Welcome new member
+Hi and welcome to the community! 👋 Please take a minute to read our community guidelines. If you have any questions, feel free to ask here or message a moderator.
+
+### Welcome back
+Welcome back! Great to see you here again.
+
+### Thanks for your first post
+Thanks for your first post, and welcome aboard! It's great to have you here.
+
+
+# Rule Reminders
+
+## Spam & Self-Promotion
+
+### Self-promotion reminder
+Hi! Just a friendly reminder that self-promotion isn't allowed outside the designated promotion thread. I've removed your post, but you're welcome to share it there instead.
+
+### Spam removed
+This post was removed because it was identified as spam. If you believe this was a mistake, please reply to this message and a moderator will review it.
+
+## Civility
+
+### Keep it respectful
+Hey everyone, let's keep the conversation respectful. Disagreeing is fine, but personal attacks aren't. Please focus on the topic, not the person.
+
+### Heated discussion
+This discussion is getting heated. Please take a moment and keep things civil, or the thread may be locked.
+
+## Off-Topic
+
+### Off-topic post moved
+Hi! This post is a bit off-topic for this space, so I've moved it to the general discussion area. Thanks for understanding!
+
+
+# Moderation Actions
+
+### Formal warning
+Hello,
+
+This is a formal warning for a violation of our community guidelines.
+
+Please take a moment to review the guidelines. Further violations may lead to a temporary suspension.
+
+Thank you,
+The Moderation Team
+
+### Post removed
+Your post has been removed because it doesn't follow our community guidelines. Please review them before posting again. If you have questions, feel free to reach out to the moderation team.
+
+### Thread locked
+This thread has been locked because the discussion has run its course. Feel free to start a new thread if you have something new to add.
+
+
+# Support
+
+### Help center
+Thanks for reaching out! You'll find answers to the most common questions in our help center. If that doesn't solve it, reply here and we'll take a look.
+
+### Report received
+Thank you for your report. Our moderation team will review it shortly. We appreciate you helping keep the community safe.
+
+### Appeal process
+If you believe a moderation decision was made in error, you're welcome to submit an appeal by messaging the moderation team. Please include a link to the content and a short explanation, and we'll review it as soon as possible.

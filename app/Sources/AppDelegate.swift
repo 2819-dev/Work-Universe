@@ -2,277 +2,202 @@ import AppKit
 import ServiceManagement
 
 // This app never reads the clipboard. It only writes a snippet to it
-// when you click one.
-final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
-    static let folderURL = FileManager.default.homeDirectoryForCurrentUser
-        .appendingPathComponent("Library/Application Support/Snippet Menu", isDirectory: true)
-    static let fileURL = folderURL.appendingPathComponent("snippets.txt")
-
+// when you choose one.
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    private let store = SnippetStore()
+    private var model: PanelModel!
+    private var panel: SidePanelController!
     private var statusItem: NSStatusItem!
-    private let menu = NSMenu()
-    private var result = ParseResult()
-    private var loadError: String?        // the file can't be used at all
-    private var shortcut: Shortcut?       // currently registered
-    private var shortcutProblem: String?
+
+    private enum Keys {
+        static let launchedBefore = "createdExampleFile"
+        static let shortcutKeyCode = "shortcutKeyCode"
+        static let shortcutModifiers = "shortcutModifiers"
+    }
 
     // MARK: Start up
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        let firstLaunch = !UserDefaults.standard.bool(forKey: Keys.launchedBefore)
+        if firstLaunch {
+            if !store.fileExists { store.createStarterLibrary() }
+            UserDefaults.standard.set(true, forKey: Keys.launchedBefore)
+        }
+        store.reload()
+
+        model = PanelModel(shortcut: savedShortcut())
+        model.applyShortcut = { [weak self] shortcut in self?.applyShortcut(shortcut) ?? false }
+        model.pauseShortcut = { [weak self] paused in
+            guard let self else { return }
+            if paused { HotKey.unregister() } else { _ = self.registerHotKey(self.model.shortcut) }
+        }
+        model.isOpenAtLogin = { SMAppService.mainApp.status == .enabled }
+        model.setOpenAtLogin = { [weak self] enabled in self?.setOpenAtLogin(enabled) }
+        panel = SidePanelController(store: store, model: model)
+
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
-            if let image = NSImage(systemSymbolName: "scissors", accessibilityDescription: "Snippets") {
+            if let image = NSImage(systemSymbolName: "scissors", accessibilityDescription: "Snippet Menu") {
                 image.isTemplate = true
                 button.image = image
             } else {
                 button.title = "✂︎"
             }
-            button.toolTip = "Snippets"
+            button.toolTip = "Snippet Menu"
+            button.target = self
+            button.action = #selector(statusItemClicked(_:))
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
-        menu.delegate = self
+
+        if !registerHotKey(model.shortcut) {
+            HUD.show("The shortcut \(model.shortcut.display) is in use by another app. Choose a new one in Snippet Menu.", seconds: 4)
+        }
+
+        let problem = store.loadError != nil || !store.problems.isEmpty
+        if firstLaunch || problem || ProcessInfo.processInfo.environment["SNIPPETMENU_SHOW_PANEL"] != nil {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self.showPanelForLaunch() }
+        } else {
+            HUD.show("Snippet Menu is ready · \(model.shortcut.display) opens your snippets", seconds: 2.5)
+        }
+    }
+
+    private func showPanelForLaunch() {
+        panel.show()
+        // Used to capture preview images of a category page.
+        if ProcessInfo.processInfo.environment["SNIPPETMENU_SHOW_PANEL"] == "category",
+           let first = store.categories.first(where: { !$0.subcategories.isEmpty }) ?? store.categories.first {
+            model.push(.category(first.id))
+        }
+    }
+
+    // MARK: Menu bar icon
+
+    @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
+        if NSApp.currentEvent?.type == .rightMouseUp {
+            panel.hide()
+            let menu = quickMenu()
+            menu.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.bounds.height + 5), in: sender)
+        } else {
+            panel.toggle()
+        }
+    }
+
+    // MARK: Quick menu (keyboard shortcut)
+
+    private func showQuickMenuAtMouse() {
+        panel.hide()
+        let previousApp = NSWorkspace.shared.frontmostApplication
+        NSApp.activate(ignoringOtherApps: true)
+        quickMenu().popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
+        // Hand focus back so ⌘V pastes into the app you were using.
+        if let previousApp, previousApp != NSRunningApplication.current, !panel.isVisible {
+            previousApp.activate(options: [])
+        }
+    }
+
+    private func quickMenu() -> NSMenu {
+        store.reloadIfChanged()
+        let menu = NSMenu()
         menu.autoenablesItems = false
-        statusItem.menu = menu
 
-        let firstRunKey = "createdExampleFile"
-        if !UserDefaults.standard.bool(forKey: firstRunKey) {
-            if !FileManager.default.fileExists(atPath: Self.fileURL.path) { _ = writeExampleFile() }
-            UserDefaults.standard.set(true, forKey: firstRunKey)
-        }
-
-        reload()
-        if loadError != nil || !result.problems.isEmpty || shortcutProblem != nil {
-            showProblems()
+        if store.loadError != nil {
+            let item = NSMenuItem(title: "Your snippets couldn't be loaded", action: nil, keyEquivalent: "")
+            item.isEnabled = false
+            menu.addItem(item)
+        } else if store.categories.allSatisfy({ $0.snippetCount == 0 }) {
+            let item = NSMenuItem(title: "No snippets yet", action: nil, keyEquivalent: "")
+            item.isEnabled = false
+            menu.addItem(item)
         } else {
-            HUD.show("Snippets ready · \(shortcut?.display ?? "") opens the menu", seconds: 2.5)
-        }
-    }
-
-    // MARK: Reading the file
-
-    private func reload() {
-        loadError = nil
-        result = ParseResult()
-        let path = Self.fileURL.path
-
-        if !FileManager.default.fileExists(atPath: path) {
-            loadError = "Couldn't find your snippets file.\n\nIt should be at:\n\(path)\n\nChoose “Create example snippets file” from the ✂︎ menu to make a new one."
-        } else if let content = try? String(contentsOf: Self.fileURL, encoding: .utf8) {
-            result = SnippetParser.parse(content)
-            if content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                loadError = "Your snippets file is empty."
-            } else if result.snippetCount == 0 {
-                loadError = "No snippets found in your snippets file.\n\nEach snippet needs a line starting with ### (three hashes and a space) under a # Category line."
-            }
-        } else {
-            loadError = "Couldn't read your snippets file. Make sure it's saved as plain text.\n\nIt's at:\n\(path)"
-        }
-
-        // Keyboard shortcut: from the file if given, otherwise Control+Option+S.
-        shortcutProblem = nil
-        var wanted = Shortcut.fallback
-        if let setting = result.shortcut {
-            if let parsed = Shortcut.parse(setting) {
-                wanted = parsed
-            } else {
-                shortcutProblem = "The shortcut “\(setting)” wasn't understood, so \(Shortcut.fallback.display) is used instead. Write it like: Shortcut: control+option+s"
-            }
-        }
-        if wanted != shortcut {
-            if HotKey.register(wanted, action: { [weak self] in self?.showMenuAtMouse() }) {
-                shortcut = wanted
-            } else {
-                shortcut = nil
-                shortcutProblem = "The shortcut \(wanted.display) couldn't be turned on. Another app may be using it. Try a different one."
-            }
-        }
-    }
-
-    private func showProblems() {
-        var parts: [String] = []
-        if let loadError { parts.append(loadError) }
-        if !result.problems.isEmpty {
-            parts.append("Some snippets have mistakes (the others still work):\n• " + result.problems.joined(separator: "\n• "))
-        }
-        if let shortcutProblem { parts.append(shortcutProblem) }
-        if parts.isEmpty {
-            HUD.show("Snippets loaded")
-        } else {
-            showAlert("Snippet Menu: problem", parts.joined(separator: "\n\n"))
-        }
-    }
-
-    // MARK: Building the menu
-
-    // Called every time the menu opens, so it always shows the latest file.
-    func menuNeedsUpdate(_ menu: NSMenu) {
-        guard menu === self.menu else { return }
-        reload()
-        menu.removeAllItems()
-
-        if loadError != nil {
-            menu.addItem(disabledItem("⚠️ Snippets couldn't be loaded"))
-            menu.addItem(actionItem("Show details…", #selector(showProblemsAction)))
-            if !FileManager.default.fileExists(atPath: Self.fileURL.path) {
-                menu.addItem(actionItem("Create example snippets file", #selector(createExampleAction)))
-            }
-        } else {
-            for category in result.categories {
-                let items = categoryItems(category)
-                guard !items.isEmpty else { continue }
+            for category in store.categories where category.snippetCount > 0 {
                 let submenu = NSMenu(title: category.title)
                 submenu.autoenablesItems = false
-                items.forEach(submenu.addItem)
+                for sub in category.subcategories where !sub.snippets.isEmpty {
+                    let subItem = NSMenuItem(title: sub.title, action: nil, keyEquivalent: "")
+                    subItem.submenu = NSMenu(title: sub.title)
+                    sub.snippets.forEach { subItem.submenu?.addItem(snippetItem($0)) }
+                    submenu.addItem(subItem)
+                }
+                if submenu.numberOfItems > 0 && !category.snippets.isEmpty { submenu.addItem(.separator()) }
+                category.snippets.forEach { submenu.addItem(snippetItem($0)) }
+
                 let item = NSMenuItem(title: category.title, action: nil, keyEquivalent: "")
                 item.submenu = submenu
                 menu.addItem(item)
             }
-            if !result.problems.isEmpty || shortcutProblem != nil {
-                menu.addItem(.separator())
-                menu.addItem(actionItem("⚠️ Some problems found. Show details…", #selector(showProblemsAction)))
-            }
         }
 
         menu.addItem(.separator())
-        if let shortcut { menu.addItem(disabledItem("Shortcut: \(shortcut.display)")) }
-        menu.addItem(actionItem("Edit snippets…", #selector(editSnippets)))
-        menu.addItem(actionItem("Show snippets file in Finder", #selector(revealSnippets)))
-        menu.addItem(actionItem("Reload snippets", #selector(reloadAction)))
-        menu.addItem(.separator())
-        let login = actionItem("Open at Login", #selector(toggleOpenAtLogin))
-        login.state = SMAppService.mainApp.status == .enabled ? .on : .off
-        menu.addItem(login)
-        menu.addItem(actionItem("Quit Snippet Menu", #selector(quit)))
-    }
-
-    private func categoryItems(_ category: Category) -> [NSMenuItem] {
-        var items: [NSMenuItem] = []
-        for sub in category.subcategories where !sub.snippets.isEmpty {
-            let submenu = NSMenu(title: sub.title)
-            submenu.autoenablesItems = false
-            sub.snippets.map(snippetItem).forEach(submenu.addItem)
-            let item = NSMenuItem(title: sub.title, action: nil, keyEquivalent: "")
-            item.submenu = submenu
-            items.append(item)
-        }
-        if !items.isEmpty && !category.snippets.isEmpty { items.append(.separator()) }
-        items += category.snippets.map(snippetItem)
-        return items
+        let manage = NSMenuItem(title: "Manage Snippets…", action: #selector(openPanel), keyEquivalent: "")
+        manage.target = self
+        menu.addItem(manage)
+        return menu
     }
 
     private func snippetItem(_ snippet: Snippet) -> NSMenuItem {
-        let item = actionItem(snippet.title, #selector(copySnippet(_:)))
+        let item = NSMenuItem(title: snippet.title, action: #selector(copySnippet(_:)), keyEquivalent: "")
+        item.target = self
         item.representedObject = snippet
         item.toolTip = snippet.text.count > 300 ? String(snippet.text.prefix(300)) + "…" : snippet.text
         return item
     }
 
-    private func actionItem(_ title: String, _ action: Selector) -> NSMenuItem {
-        let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
-        item.target = self
-        return item
-    }
-
-    private func disabledItem(_ title: String) -> NSMenuItem {
-        let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
-        item.isEnabled = false
-        return item
-    }
-
-    // MARK: Actions
-
-    private func showMenuAtMouse() {
-        let previousApp = NSWorkspace.shared.frontmostApplication
-        NSApp.activate(ignoringOtherApps: true)
-        menu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
-        // Hand focus back so ⌘V pastes into the app you were using.
-        if let previousApp, previousApp != NSRunningApplication.current {
-            previousApp.activate(options: [])
-        }
-    }
-
     @objc private func copySnippet(_ sender: NSMenuItem) {
         guard let snippet = sender.representedObject as? Snippet else { return }
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.setString(snippet.text, forType: .string)
-        HUD.show("Copied: \(snippet.title)")
+        model.copy(snippet)
     }
 
-    @objc private func editSnippets() {
-        if !FileManager.default.fileExists(atPath: Self.fileURL.path) {
-            showAlert("No snippets file yet", "Choose “Create example snippets file” from the ✂︎ menu first.")
-            return
-        }
-        let textEdit = URL(fileURLWithPath: "/System/Applications/TextEdit.app")
-        NSWorkspace.shared.open([Self.fileURL], withApplicationAt: textEdit,
-                                configuration: NSWorkspace.OpenConfiguration())
+    @objc private func openPanel() {
+        DispatchQueue.main.async { self.panel.show() }
     }
 
-    @objc private func revealSnippets() {
-        if FileManager.default.fileExists(atPath: Self.fileURL.path) {
-            NSWorkspace.shared.activateFileViewerSelecting([Self.fileURL])
-        } else {
-            try? FileManager.default.createDirectory(at: Self.folderURL, withIntermediateDirectories: true)
-            NSWorkspace.shared.open(Self.folderURL)
-        }
+    // MARK: Keyboard shortcut
+
+    private func savedShortcut() -> Shortcut {
+        let defaults = UserDefaults.standard
+        guard defaults.object(forKey: Keys.shortcutKeyCode) != nil,
+              let saved = Shortcut.make(keyCode: UInt32(defaults.integer(forKey: Keys.shortcutKeyCode)),
+                                        carbonModifiers: UInt32(defaults.integer(forKey: Keys.shortcutModifiers)))
+        else { return Shortcut.fallback }
+        return saved
     }
 
-    @objc private func reloadAction() {
-        reload()
-        showProblems()
+    private func registerHotKey(_ shortcut: Shortcut) -> Bool {
+        HotKey.register(shortcut) { [weak self] in self?.showQuickMenuAtMouse() }
     }
 
-    @objc private func showProblemsAction() {
-        showProblems()
-    }
-
-    @objc private func createExampleAction() {
-        if writeExampleFile() {
-            reload()
-            HUD.show("Example snippets file created")
-            editSnippets()
-        }
-    }
-
-    @objc private func toggleOpenAtLogin() {
-        let service = SMAppService.mainApp
-        do {
-            if service.status == .enabled {
-                try service.unregister()
-            } else {
-                try service.register()
-            }
-        } catch {
-            showAlert("Couldn't change “Open at Login”",
-                      "You can set it by hand: open System Settings → General → Login Items, click + under “Open at Login”, and choose Snippet Menu from Applications.\n\n(\(error.localizedDescription))")
-        }
-    }
-
-    @objc private func quit() {
-        NSApp.terminate(nil)
-    }
-
-    // MARK: Helpers
-
-    private func writeExampleFile() -> Bool {
-        do {
-            guard let example = Bundle.main.url(forResource: "example-snippets", withExtension: "txt") else {
-                throw CocoaError(.fileNoSuchFile)
-            }
-            try FileManager.default.createDirectory(at: Self.folderURL, withIntermediateDirectories: true)
-            try FileManager.default.copyItem(at: example, to: Self.fileURL)
-            return true
-        } catch {
-            showAlert("Couldn't create the snippets file", error.localizedDescription)
+    private func applyShortcut(_ shortcut: Shortcut) -> Bool {
+        guard registerHotKey(shortcut) else {
+            _ = registerHotKey(model.shortcut)
             return false
         }
+        model.shortcut = shortcut
+        UserDefaults.standard.set(Int(shortcut.keyCode), forKey: Keys.shortcutKeyCode)
+        UserDefaults.standard.set(Int(shortcut.carbonModifiers), forKey: Keys.shortcutModifiers)
+        return true
     }
 
-    private func showAlert(_ title: String, _ text: String) {
-        NSApp.activate(ignoringOtherApps: true)
-        let alert = NSAlert()
-        alert.messageText = title
-        alert.informativeText = text
-        alert.alertStyle = .warning
-        alert.runModal()
+    // MARK: Open at Login
+
+    private func setOpenAtLogin(_ enabled: Bool) {
+        do {
+            if enabled {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+        } catch {
+            let alert = NSAlert()
+            alert.messageText = "“Open at Login” couldn't be changed."
+            alert.informativeText = "You can set it in System Settings → General → Login Items: click + under “Open at Login” and choose Snippet Menu."
+            alert.alertStyle = .warning
+            alert.runModal()
+        }
+        refreshPanel()
+    }
+
+    // Refreshes the panel so the Open at Login checkmark is current.
+    private func refreshPanel() {
+        model.objectWillChange.send()
     }
 }

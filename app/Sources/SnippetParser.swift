@@ -1,43 +1,44 @@
 import Foundation
 
-// Reads snippets.txt. Uses only Foundation so it can be tested on its own.
-//
-// Format:
+// The snippet library is stored as plain text:
 //   # Category
 //   ## Subcategory            (optional)
 //   ### Snippet title
 //   The text that gets copied. As many lines as you like.
 //
-// Before the first "# Category" line, anything is treated as notes, except
-// an optional line like "Shortcut: control+option+s".
+// Lines before the first category are kept as-is (a short note for anyone
+// opening the file). A snippet line that itself starts with "#" or "\" is
+// stored with a leading "\" so it isn't mistaken for a heading.
 
-struct Snippet {
-    let title: String
-    let text: String
+struct Snippet: Identifiable, Equatable {
+    var id = UUID()
+    var title: String
+    var text: String
 }
 
-struct Subcategory {
-    let title: String
+struct Subcategory: Identifiable, Equatable {
+    var id = UUID()
+    var title: String
     var snippets: [Snippet] = []
 }
 
-struct Category {
-    let title: String
+struct Category: Identifiable, Equatable {
+    var id = UUID()
+    var title: String
     var subcategories: [Subcategory] = []
     var snippets: [Snippet] = []
+
+    var snippetCount: Int {
+        snippets.count + subcategories.reduce(0) { $0 + $1.snippets.count }
+    }
 }
 
 struct ParseResult {
+    var preamble: [String] = []
     var categories: [Category] = []
     var problems: [String] = []
-    var shortcut: String?
 
-    var snippetCount: Int {
-        categories.reduce(0) { total, category in
-            total + category.snippets.count
-                + category.subcategories.reduce(0) { $0 + $1.snippets.count }
-        }
-    }
+    var snippetCount: Int { categories.reduce(0) { $0 + $1.snippetCount } }
 }
 
 enum SnippetParser {
@@ -51,6 +52,7 @@ enum SnippetParser {
         var pendingLines: [String] = []
         var pendingPlace: (category: Int, subcategory: Int?)?
         var currentSubcategory: Int?
+        var seenHeading = false
 
         func finishSnippet() {
             defer { pendingTitle = nil; pendingLines = []; pendingPlace = nil }
@@ -72,14 +74,14 @@ enum SnippetParser {
             let lineNumber = index + 1
             guard let heading = headingParts(line), heading.level <= 3 else {
                 if pendingTitle != nil {
-                    pendingLines.append(line)
-                } else if result.categories.isEmpty, result.shortcut == nil,
-                          let setting = shortcutSetting(line) {
-                    result.shortcut = setting
+                    pendingLines.append(unescape(line))
+                } else if !seenHeading {
+                    result.preamble.append(line)
                 }
                 continue
             }
 
+            seenHeading = true
             finishSnippet()
             switch heading.level {
             case 1:
@@ -87,14 +89,14 @@ enum SnippetParser {
                 currentSubcategory = nil
             case 2:
                 if result.categories.isEmpty {
-                    result.problems.append("Line \(lineNumber): subcategory “\(heading.title)” needs a # Category above it.")
+                    result.problems.append("Line \(lineNumber): the subcategory “\(heading.title)” isn't inside a category.")
                 } else {
                     result.categories[result.categories.count - 1].subcategories.append(Subcategory(title: heading.title))
                     currentSubcategory = result.categories[result.categories.count - 1].subcategories.count - 1
                 }
             default:
                 if result.categories.isEmpty {
-                    result.problems.append("Line \(lineNumber): snippet “\(heading.title)” needs a # Category above it.")
+                    result.problems.append("Line \(lineNumber): the snippet “\(heading.title)” isn't inside a category.")
                 } else {
                     pendingTitle = heading.title
                     pendingPlace = (result.categories.count - 1, currentSubcategory)
@@ -115,21 +117,52 @@ enum SnippetParser {
         return (hashes.count, title)
     }
 
-    static func shortcutSetting(_ line: String) -> String? {
-        let trimmed = line.trimmingCharacters(in: .whitespaces)
-        guard trimmed.lowercased().hasPrefix("shortcut:") else { return nil }
-        return String(trimmed.dropFirst("shortcut:".count)).trimmingCharacters(in: .whitespaces)
-    }
-
     static func trimBlankLines(_ lines: [String]) -> [String] {
         let isBlank = { (line: String) in line.trimmingCharacters(in: .whitespaces).isEmpty }
         guard let first = lines.firstIndex(where: { !isBlank($0) }),
               let last = lines.lastIndex(where: { !isBlank($0) }) else { return [] }
         return Array(lines[first...last])
     }
+
+    private static func unescape(_ line: String) -> String {
+        line.hasPrefix("\\#") || line.hasPrefix("\\\\") ? String(line.dropFirst()) : line
+    }
 }
 
-// A keyboard shortcut written like "control+option+s".
+enum SnippetWriter {
+    static func serialize(preamble: [String], categories: [Category]) -> String {
+        var lines = SnippetParser.trimBlankLines(preamble)
+        for category in categories {
+            if !lines.isEmpty { lines += ["", ""] }
+            lines.append("# " + cleanTitle(category.title))
+            // Snippets directly in the category must come before any subcategory.
+            for snippet in category.snippets { lines += [""] + snippetLines(snippet) }
+            for subcategory in category.subcategories {
+                lines += ["", "## " + cleanTitle(subcategory.title)]
+                for snippet in subcategory.snippets { lines += [""] + snippetLines(snippet) }
+            }
+        }
+        return lines.joined(separator: "\n") + "\n"
+    }
+
+    static func cleanTitle(_ title: String) -> String {
+        title.components(separatedBy: .newlines).joined(separator: " ").trimmingCharacters(in: .whitespaces)
+    }
+
+    static func cleanText(_ text: String) -> String {
+        let lines = text.replacingOccurrences(of: "\r\n", with: "\n").components(separatedBy: "\n")
+        return SnippetParser.trimBlankLines(lines).joined(separator: "\n")
+    }
+
+    private static func snippetLines(_ snippet: Snippet) -> [String] {
+        let body = snippet.text.components(separatedBy: "\n").map { line in
+            line.hasPrefix("#") || line.hasPrefix("\\") ? "\\" + line : line
+        }
+        return ["### " + cleanTitle(snippet.title)] + body
+    }
+}
+
+// A keyboard shortcut such as Control + Option + S.
 struct Shortcut: Equatable {
     let keyCode: UInt32
     let carbonModifiers: UInt32
@@ -138,10 +171,10 @@ struct Shortcut: Equatable {
     static let fallback = Shortcut.parse("control+option+s")!
 
     // Carbon modifier flags (from HIToolbox/Events.h).
-    private static let cmdKey: UInt32 = 256
-    private static let shiftKey: UInt32 = 512
-    private static let optionKey: UInt32 = 2048
-    private static let controlKey: UInt32 = 4096
+    static let cmdKey: UInt32 = 256
+    static let shiftKey: UInt32 = 512
+    static let optionKey: UInt32 = 2048
+    static let controlKey: UInt32 = 4096
 
     // Key codes for a US-layout keyboard.
     private static let keyCodes: [String: UInt32] = [
@@ -171,7 +204,12 @@ struct Shortcut: Equatable {
             default: return nil
             }
         }
-        // Shift alone would steal ordinary capital letters.
+        return make(keyCode: keyCode, carbonModifiers: modifiers)
+    }
+
+    static func make(keyCode: UInt32, carbonModifiers modifiers: UInt32) -> Shortcut? {
+        guard let keyName = keyCodes.first(where: { $0.value == keyCode })?.key else { return nil }
+        // Shift alone would take over ordinary capital letters.
         guard modifiers & (controlKey | optionKey | cmdKey) != 0 else { return nil }
 
         var display = ""
@@ -179,7 +217,8 @@ struct Shortcut: Equatable {
         if modifiers & optionKey != 0 { display += "⌥" }
         if modifiers & shiftKey != 0 { display += "⇧" }
         if modifiers & cmdKey != 0 { display += "⌘" }
-        display += keyName.uppercased()
-        return Shortcut(keyCode: keyCode, carbonModifiers: modifiers, display: display)
+        display += keyName.count == 1 ? keyName.uppercased() : keyName.capitalized
+        let relevant = modifiers & (controlKey | optionKey | shiftKey | cmdKey)
+        return Shortcut(keyCode: keyCode, carbonModifiers: relevant, display: display)
     }
 }
