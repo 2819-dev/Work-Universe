@@ -1,195 +1,129 @@
-# Snippet Menu for Mac
+# Snippet Menu
 
-A small ✂︎ scissors icon in your Mac's menu bar that holds your own ready-made replies for community moderation.
-Click a reply and its text is copied, so you can paste it wherever you need it.
+**Your saved replies, one click away on your Mac.**
 
-- **Only your snippets.** The menu shows only what you write in your snippets file.
-- **Not a clipboard manager.** It never reads, records, or saves anything you copy.
-- **It doesn't paste for you.** It only copies. You choose where to paste, with **⌘ Command + V**.
-- **Free.** No purchase and no Apple Developer account needed.
-- Works on **macOS 13 (Ventura) or newer**, on Apple Silicon and Intel Macs.
+Snippet Menu keeps the replies you write over and over (welcome messages, rule reminders, warnings) in a tidy panel in your menu bar. Click one and it's copied, ready to paste anywhere.
 
----
+- **Organized your way:** categories, subcategories and snippets.
+- **Always at hand:** click the ✂︎ scissors in the menu bar, or press **Control + Option + S** in any app.
+- **Private:** your snippets stay on your Mac. Snippet Menu never reads or saves anything else you copy.
+- **Free:** no account, no subscription.
 
-## 1. Install (one time, about 5 minutes)
-
-### Step 1: Download
-
-1. Open the **[latest release](https://github.com/2819-dev/Work-Universe/releases/latest)**.
-2. Under **Assets**, click **Snippet-Menu.zip**. It downloads to your **Downloads** folder.
-3. Double-click **Snippet-Menu.zip** in Downloads. A folder called **Snippet Menu** appears.
-
-### Step 2: Move the app into Applications
-
-1. Open the **Snippet Menu** folder.
-2. Drag **Snippet Menu** (the app with the scissors icon) into your **Applications** folder.
-   Open a second Finder window with **⌘ Command + N** and click **Applications** in the sidebar if you need a place to drop it.
-
-### Step 3: Open it the first time
-
-Because the app is free and isn't registered with Apple (that costs $99/year), macOS blocks it the first time. You only need to allow it **once**:
-
-1. In **Applications**, double-click **Snippet Menu**.
-2. A message says Apple "could not verify" it or that it "can't be opened". Click **Done** (or **OK**). **Don't** click "Move to Trash".
-3. Open **System Settings** (Apple menu  → System Settings) and click **Privacy & Security** in the sidebar.
-4. Scroll down to the **Security** section. You'll see *"Snippet Menu" was blocked…*. Click **Open Anyway**.
-5. Enter your Mac password (or use Touch ID) if asked, then click **Open Anyway** again.
-
-A **✂︎ scissors icon** appears in your menu bar (top-right of your screen), along with a short "Snippets ready" message. You're done!
-
-After this, it opens normally, with no more warnings.
-
-> **Can't see the scissors?** If your menu bar is crowded, macOS hides icons that don't fit, especially on MacBooks with a camera notch. Quit another menu bar app to make room. The keyboard shortcut (below) works either way.
-
-### Step 4: Start it automatically (recommended)
-
-Click **✂︎** and choose **Open at Login**. A checkmark means it starts every time you turn on your Mac.
+Requires macOS 13 Ventura or later. Works on Apple Silicon and Intel Macs.
 
 ---
 
-## 2. Everyday use
+## Download
 
-1. Press **Control + Option + S** in any app (or click **✂︎** in the menu bar).
-   The menu opens right where your mouse pointer is.
-2. Point at a **category**, then a **subcategory** if it has one, then click a **snippet**.
-   Hover over a snippet for a moment to preview its text.
-3. A message says **"Copied: [snippet title]"**.
+**[Download Snippet Menu](https://github.com/2819-dev/Work-Universe/releases/latest/download/Snippet-Menu.zip)**
+
+---
+
+## Install
+
+1. Open your **Downloads** folder and double-click **Snippet-Menu.zip**. A **Snippet Menu** folder appears.
+2. Drag the **Snippet Menu** app into your **Applications** folder.
+3. Open **Applications** and double-click **Snippet Menu**.
+
+### The first time you open it
+
+Snippet Menu is distributed independently rather than through the App Store, so macOS asks you to confirm the first time you open it:
+
+1. When macOS says it can't verify **Snippet Menu**, click **Done**.
+2. Open **System Settings** and choose **Privacy & Security**.
+3. Scroll down to **Security** and click **Open Anyway** next to "Snippet Menu was blocked".
+4. Confirm with your password or Touch ID, then click **Open Anyway**.
+
+You only need to do this once. From then on, Snippet Menu opens like any other app.
+
+When it opens, a **✂︎ scissors** icon appears in your menu bar and your snippets panel slides in from the right.
+
+> **Tip:** Snippet Menu comes with a set of ready-to-use moderation replies. Use them as they are, edit them, or delete them and add your own.
+
+---
+
+## Using Snippet Menu
+
+### Copy a snippet
+
+1. Click the **✂︎** in the menu bar. Your snippets panel opens on the right side of the screen.
+2. Click a **category** to open it.
+3. Click a **snippet**. It's copied, and you'll see **"Copied: [snippet name]"**.
 4. Click where you want the text and press **⌘ Command + V** to paste.
 
-To close the menu without choosing anything, press **Esc** or click elsewhere.
+### Quick access from any app
+
+Press **Control + Option + S** and a menu opens right at your pointer. Choose a category, then a snippet, and it's copied. This is the fastest way to grab a snippet while you're typing a reply.
+
+### Add a category
+
+In the main panel, click the blue **+** button at the top, type a name, and click **Create**.
+
+### Add a snippet or subcategory
+
+1. Open a category.
+2. Hover over (or click) the blue **+** button at the top. Two choices appear:
+   - **Add Snippet**: give it a title (the name you'll see in the list) and the text you want copied, then click **Save**.
+   - **Add Subcategory**: a folder inside the category for grouping related snippets.
+3. Inside a subcategory, the **+** button adds a snippet straight away.
+
+### Edit, rename or delete
+
+- **Edit a snippet:** hover over it and click the ✎ pencil.
+- **More options:** right-click any category, subcategory or snippet to **Rename**, **Edit** or **Delete** it.
+
+### Close the panel
+
+Click the **✕**, press **Esc**, or click the ✂︎ again. It also closes on its own when you click into another app.
 
 ---
 
-## 3. Writing your own snippets
+## Settings
 
-Click **✂︎ → Edit snippets…**. Your snippets file opens in TextEdit.
-The app comes with example moderation replies. Replace them with your own.
+Click the **•••** button at the top of the main panel.
 
-Start a line with these markers, each followed by a space:
-
-| Start the line with | What it means |
+| Setting | What it does |
 |---|---|
-| `# ` | A **category**, the top-level menu item |
-| `## ` | A **subcategory** inside that category (optional) |
-| `### ` | A **snippet title**, the name you see in the menu |
-| anything else | The **text of the snippet** above it. This is what gets copied. It can be many lines. |
+| **Keyboard Shortcut…** | Change the quick-access shortcut. Click **Change Shortcut** and press the keys you want, for example **⌘ Command + Shift + M**. |
+| **Open at Login** | Start Snippet Menu automatically when you turn on your Mac. Recommended. |
+| **Show Library in Finder** | Shows the file where your snippets are saved, so you can back it up. |
+| **Quit Snippet Menu** | Closes Snippet Menu. To reopen it, open it from Applications. |
 
-Example:
-
-```
-# Rule reminders
-
-## Spam
-
-### Self-promo reminder
-Hi! Just a friendly reminder that self-promotion isn't allowed
-outside the designated thread.
-
-### Spam removed
-This post was removed because it was identified as spam.
-
-# Welcome
-
-### Welcome new member
-Hi and welcome to the community! 👋
-```
-
-**Save with ⌘ Command + S.** The menu picks up your changes the next time you open it. There's nothing to restart.
-
-Tips:
-
-- **Subcategories are optional.** A snippet can sit directly under a category, like "Welcome new member" above.
-- **Blank lines inside a snippet are kept.** Blank lines at its very start or end are trimmed.
-- **Notes before the first `#` line are ignored**, so you can keep reminders to yourself at the top.
-- **Emoji and other languages are fine.**
-- TextEdit may turn straight quotes into curly ones as you type. To stop that: **Edit → Substitutions →** untick **Smart Quotes**.
-- **Back it up:** **✂︎ → Show snippets file in Finder** shows where it lives. Copy that `snippets.txt` somewhere safe from time to time.
+**Tip:** right-click the ✂︎ in the menu bar for the quick menu.
 
 ---
 
-## 4. Changing the keyboard shortcut
+## Updating
 
-1. **✂︎ → Edit snippets…**
-2. Near the top, find this line:
+1. Click **•••** → **Quit Snippet Menu**.
+2. **[Download the latest version](https://github.com/2819-dev/Work-Universe/releases/latest/download/Snippet-Menu.zip)**, then drag the new app into **Applications** and choose **Replace**.
+3. Open it. If macOS asks again, follow **The first time you open it** above.
 
-   ```
-   Shortcut: control+option+s
-   ```
-
-3. Change it. Put the key names in any order, joined with `+`:
-   - Modifiers: `control`, `option`, `command`, `shift`. Use at least one of control, option, or command.
-   - The key: a letter, a number, or `f1`–`f12`.
-   - Example: `Shortcut: command+shift+m`
-4. Save. The new shortcut works the next time you open the ✂︎ menu (click it once).
-
-The current shortcut is always shown near the bottom of the ✂︎ menu.
-If the new one doesn't work, another app is probably using it, so pick a different combination.
+Your snippets are saved separately from the app, so updating never affects them.
 
 ---
 
-## 5. The ✂︎ menu, item by item
+## Troubleshooting
 
-| Item | What it does |
-|---|---|
-| Your categories | Your snippets. Click one to copy it. |
-| Shortcut: ⌃⌥S | Shows your current keyboard shortcut (⌃ = Control, ⌥ = Option, ⇧ = Shift, ⌘ = Command). |
-| Edit snippets… | Opens your snippets file in TextEdit. |
-| Show snippets file in Finder | Shows where the file is stored, for backups. |
-| Reload snippets | Re-reads the file now and tells you about any mistakes. |
-| Open at Login | Starts Snippet Menu automatically when your Mac starts. |
-| Quit Snippet Menu | Closes the app. Open it from Applications to bring it back. |
+**I don't see the ✂︎ in my menu bar.**
+The menu bar may be full, especially on MacBooks with a camera notch, where macOS hides icons that don't fit. Quit another menu bar app to make room. The keyboard shortcut always works.
 
----
+**"Open Anyway" isn't showing in Privacy & Security.**
+It only appears for a short while after you try to open the app. Double-click **Snippet Menu** in Applications again, then return to **Privacy & Security**.
 
-## 6. If something goes wrong
+**The keyboard shortcut doesn't do anything.**
+Another app may be using the same combination. Choose a different one under **••• → Keyboard Shortcut…**
 
-If there's a problem with your snippets file, the app shows a message explaining it. The ✂︎ menu also shows **⚠️ … Show details…** so you can see it again.
+**"Open at Login" won't turn on.**
+Open **System Settings → General → Login Items**, click **+** under "Open at Login", and choose **Snippet Menu**.
 
-| Message | What to do |
-|---|---|
-| "Couldn't find your snippets file" | Choose **✂︎ → Create example snippets file** to make a fresh one. |
-| "Your snippets file is empty" | Add at least one category and one snippet. |
-| "No snippets found" | Check that snippet titles start with `### `: three hashes **and a space**. |
-| "…needs a # Category above it" | Add a `# Category` line above that snippet. |
-| "…has no text, so it was left out" | Write some text under that title, or delete the title. |
-| "The shortcut … wasn't understood" | Check the `Shortcut:` line (see section 4). |
-
-If only some snippets have mistakes, the rest still work.
-
-**"Open Anyway" isn't there?** It only appears for about an hour after you try to open the app. Double-click **Snippet Menu** in Applications again, then go back to **Privacy & Security**.
-
-**Open at Login didn't stick?** Add it by hand: **System Settings → General → Login Items**, click **+** under "Open at Login", and choose **Snippet Menu**.
+**My snippets are missing.**
+If the panel says your library couldn't be found, it was moved or deleted. Restore it from a backup to the location shown by **Show Library in Finder**, or click **Create New Library** to start fresh.
 
 ---
 
-## 7. Updating to a new version
+## Uninstall
 
-1. Quit the app: **✂︎ → Quit Snippet Menu**.
-2. Download the new **Snippet-Menu.zip** from the [latest release](https://github.com/2819-dev/Work-Universe/releases/latest), then drag the app into Applications and choose **Replace**.
-3. Open it. You may need to do **Open Anyway** once more (section 1, step 3).
-
-**Your snippets are kept.** They're stored separately from the app, so replacing the app doesn't touch them.
-
-## 8. Removing it
-
-1. **✂︎ → Quit Snippet Menu**
-2. Drag **Snippet Menu** from Applications to the Trash.
-3. Optional: to delete your snippets too, in Finder choose **Go → Go to Folder…**, type `~/Library/Application Support/Snippet Menu`, and delete that folder.
-
----
-
-## Alternative: the Hammerspoon version
-
-This repo also contains `init.lua`, which does the same job inside the free app [Hammerspoon](https://www.hammerspoon.org), if you ever prefer that. To use it:
-
-1. Install Hammerspoon.
-2. Put `init.lua` and `snippets.txt` in the `~/.hammerspoon` folder.
-3. Click the hammer icon → **Reload Config**.
-
-The shortcut is set in the top lines of `init.lua`. You don't need this if you use the Snippet Menu app.
-
----
-
-## For maintainers: how releases are made
-
-The app's source code is in `app/`. GitHub Actions builds it on a Mac for every push to `main` (see `.github/workflows/build.yml`). To publish a release with `Snippet-Menu.zip`, change the number in `app/VERSION` (e.g. `1.0.0` → `1.0.1`) and push to `main`. The build publishes a release for each new number. The app is ad-hoc signed, which is free; it isn't notarized, which is why step 3 above is needed.
+1. Click **•••** → **Quit Snippet Menu**.
+2. Drag **Snippet Menu** from **Applications** to the **Trash**.
+3. Optional: to also delete your snippets, click **Go → Go to Folder…** in Finder, enter `~/Library/Application Support/Snippet Menu`, and move that folder to the Trash.

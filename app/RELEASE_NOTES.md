@@ -1,7 +1,16 @@
-## Download
+## What's new
 
-Click **Snippet-Menu.zip** below. Open it, then drag **Snippet Menu** into your **Applications** folder.
+- **Snippets panel:** click the ✂︎ in the menu bar to open your snippets in a panel on the side of your screen.
+- **Add and edit right in the app:** use the **+** button to add categories, subcategories and snippets. Right-click to rename, edit or delete.
+- **Choose your own keyboard shortcut** from the ••• menu.
+- A refreshed set of ready-to-use moderation replies.
 
-The first time you open it, macOS will block it because the app isn't registered with Apple ($99/year). To allow it once: **System Settings → Privacy & Security → scroll down → Open Anyway**. Full steps are in the README and in "How to install.txt" inside the zip.
+## Install
 
-Works on macOS 13 (Ventura) or newer, on Apple Silicon and Intel Macs.
+1. Download **Snippet-Menu.zip** below and double-click it.
+2. Drag **Snippet Menu** into your **Applications** folder and open it.
+3. The first time, macOS asks you to confirm: open **System Settings → Privacy & Security** and click **Open Anyway**.
+
+Already using Snippet Menu? Quit it, replace the app in Applications, and open it again. Your snippets are kept.
+
+Requires macOS 13 Ventura or later, on Apple Silicon or Intel.

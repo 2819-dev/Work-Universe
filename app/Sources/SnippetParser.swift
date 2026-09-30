@@ -104,6 +104,7 @@ enum SnippetParser {
             }
         }
         finishSnippet()
+        result.preamble = trimBlankLines(result.preamble)
         return result
     }
 

@@ -32,7 +32,7 @@ func shape(_ categories: [Category]) -> String {
     }.joined(separator: "\n")
 }
 check(shape(reread.categories) == shape(starter.categories), "round trip")
-check(reread.preamble == SnippetParser.trimBlankLines(starter.preamble), "preamble round trip")
+check(reread.preamble == starter.preamble, "preamble round trip: \(reread.preamble) vs \(starter.preamble)")
 
 // Snippet text that looks like a heading survives saving.
 var tricky = Category(title: "Discord")
