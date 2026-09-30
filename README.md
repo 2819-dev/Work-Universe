@@ -11,6 +11,12 @@ Snippet Menu keeps the replies you write over and over (welcome messages, rule r
 
 Requires macOS 13 Ventura or later. Works on Apple Silicon and Intel Macs.
 
+<p align="center">
+  <img src="docs/panel-categories.png" width="260" alt="The Snippet Menu panel showing a list of categories">
+  <img src="docs/panel-add.png" width="260" alt="Inside a category, the + button offers Add Snippet and Add Subcategory">
+  <img src="docs/panel-snippets.png" width="260" alt="A list of snippets, each with a preview of its text">
+</p>
+
 ---
 
 ## Download
