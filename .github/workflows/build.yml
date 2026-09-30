@@ -68,6 +68,25 @@ jobs:
             kill $PID; sleep 1
           done
 
+      - name: Test installing an update
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LATEST="$(gh release view --json tagName -q .tagName)"; LATEST="${LATEST#v}"
+          TEST_APP="$HOME/UpdateTest/Snippet Menu.app"
+          mkdir -p "$HOME/UpdateTest"
+          cp -R "app/build/Snippet Menu.app" "$TEST_APP"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 0.1.0" "$TEST_APP/Contents/Info.plist"
+          codesign --force --deep --sign - "$TEST_APP"
+          SNIPPETMENU_TEST_AUTO_UPDATE=1 "$TEST_APP/Contents/MacOS/SnippetMenu" &
+          sleep 30
+          INSTALLED="$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$TEST_APP/Contents/Info.plist")"
+          echo "Latest release: $LATEST, installed after update: $INSTALLED"
+          pgrep -fl "UpdateTest/Snippet Menu.app" && echo "Updated app reopened" || echo "Updated app did not reopen"
+          pkill -f "UpdateTest/Snippet Menu.app" || true
+          [[ "$INSTALLED" == "$LATEST" ]]
+
       - name: Save previews for review
         if: github.ref == 'refs/heads/main'
         env:

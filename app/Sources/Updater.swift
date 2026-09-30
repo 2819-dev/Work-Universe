@@ -56,6 +56,8 @@ final class Updater {
         if let release, AppVersion.isNewer(release.version, than: Self.currentVersion) {
             available = release
             model.update = .available(version: release.version)
+            // Used by the automated build to test installing an update.
+            if ProcessInfo.processInfo.environment["SNIPPETMENU_TEST_AUTO_UPDATE"] != nil { install() }
             return
         }
         guard userInitiated else { return }
